@@ -1,0 +1,35 @@
+{% extends "layout.html" %} {% block title %} Artículos {% endblock %} 
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col md-12">
+            <div class="jumbotron p-3">
+                <div class="form-group">
+                    <div class="custom-file">
+                        <!-- <input type="file" class="custom-file-input" id="customFile">
+                        <label class="custom-file-label" for="customFile">Choose file</label> -->
+                        <input type="file" class="custom-file-input" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01">
+                        <label class="custom-file-label" for="inputGroupFile01">Choose file</label>
+
+                      </div>
+                </div>
+
+                <div class="form-group">
+                    <button class="btn btn-success btn-xs">Actualizar Precios</button>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
+{% block script %}
+<script>
+    $('.custom-file-input').on('change', function(event) {
+        var inputFile = event.currentTarget;
+        $(inputFile).parent()
+            .find('.custom-file-label')
+            .html(inputFile.files[0].name);
+    });  
+</script> 
+{% endblock %} 

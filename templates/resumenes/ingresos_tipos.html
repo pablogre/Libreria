@@ -4,13 +4,13 @@
     <div class="card-header">
       <a class="card-link" data-toggle="collapse" href="#collapseOne">
     <button type="button"  class="btn btn-primary">Tarjetas</button>
-	<span class="badge badge-secondary">$236.00</span>
+	<button type="button"  class="btn btn-secondary">{{tarjeta}}</button>
       </a>
     </div>
     <div id="collapseOne" class="collapse show" data-parent="#accordion">
       <div class="card-body">
         <table class="table">
-			<thead>
+			<thead> 
 			<tr>
 				<th  scope="col">Fecha</th>
 				<th  scope="col">Comprobante</th>
@@ -19,19 +19,21 @@
 			</tr>
 			</thead>
 			<tbody>
-			  {%for r in tarjeta%}
-			  <tr>
-					<td>{{r.0}}</td>
+			  {%for r in rs%} 			  
+			  {% if r.2=='TARJETA' %}
+			  <tr>					
+					<td>{{r.3.strftime('%d/%m/%Y') }}</td>
+					<td>{{r.4}}</td>
 					<td>{{r.1}}</td>
-					<td>{{r.2}}</td>
-					<td style="text-align:right">{{r.3}}</th>					
-				</tr>	
+					<td style="text-align:right">{{r.5}}</th>					
+				</tr>				
+				{%endif%}
 			  {%endfor%}
 			<tr>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>								
-				<td  style="text-align:right"><strong>{{ detalle|sum(attribute=3) }}</strong></td>
+				<td  style="text-align:right"><strong>{{ tarjeta }}</strong></td>
 			</tr>
 			</tbody>
 		</table>
@@ -42,7 +44,8 @@
   <div class="card">
     <div class="card-header">
       <a class="collapsed card-link" data-toggle="collapse" href="#collapseTwo">
-       <span class="badge badge-primary">Efectivo</span> <span class="badge badge-secondary">{{totefe}}</span>
+        <button type="button"  class="btn btn-primary">Efectivo</button>
+		<button type="button"  class="btn btn-secondary">{{efec}}</button>
       </a>
     </div>
     <div id="collapseTwo" class="collapse" data-parent="#accordion">
@@ -57,19 +60,21 @@
 			</tr>
 			</thead>
 			<tbody>
-			  {%for r in efectivo%}
+			 {%for r in rs%} 			
+			 {% if r.2=='EFECTIVO' %}
 			  <tr>
-					<td>{{r.0}}</td>
+						<td>{{r.3.strftime('%d/%m/%Y') }}</td>
+					<td>{{r.4}}</td>
 					<td>{{r.1}}</td>
-					<td>{{r.2}}</td>
-					<td style="text-align:right">{{r.3}}</th>					
-				</tr>	
+					<td style="text-align:right">{{r.5}}</th>					
+				</tr>					
+				{%endif%}
 			  {%endfor%}
 			<tr>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>								
-				<td  style="text-align:right"><strong>{{ detalle|sum(attribute=3) }}</strong></td>
+				<td  style="text-align:right"><strong>{{ efec}}</strong></td>
 			</tr>
 			</tbody>
 		</table>
@@ -80,7 +85,8 @@
   <div class="card">
     <div class="card-header">
       <a class="collapsed card-link" data-toggle="collapse" href="#collapseThree">
-        Cuenta Corriente <span class="badge badge-secondary">{{totctacte}}</span>
+          <button type="button"  class="btn btn-primary">Cuenta Corriente</button>
+		  <button type="button"  class="btn btn-secondary">{{ctacte}}</button>
       </a>
     </div>
     <div id="collapseThree" class="collapse" data-parent="#accordion">
@@ -95,19 +101,21 @@
 			</tr>
 			</thead>
 			<tbody>
-			  {%for r in ctacte%}
+			 {%for r in rs%} 			 
+			 {% if r.2=='CTA-CTE.' %}
 			  <tr>
-					<td>{{r.0}}</td>
+						<td>{{r.3.strftime('%d/%m/%Y') }}</td>
+					<td>{{r.4}}</td>
 					<td>{{r.1}}</td>
-					<td>{{r.2}}</td>
-					<td style="text-align:right">{{r.3}}</th>					
-				</tr>	
+					<td style="text-align:right">{{r.5}}</th>					
+				</tr>			
+				{%endif%}
 			  {%endfor%}
 			<tr>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>								
-				<td  style="text-align:right"><strong>{{ detalle|sum(attribute=3) }}</strong></td>
+				<td  style="text-align:right"><strong>{{ ctacte }}</strong></td>
 			</tr>
 			</tbody>
 		</table>
@@ -118,7 +126,8 @@
   <div class="card">
     <div class="card-header">
       <a class="collapsed card-link" data-toggle="collapse" href="#collapseFour">
-        Transferencias <span class="badge badge-secondary">{{tottransfer}}</span>
+        <button type="button"  class="btn btn-primary">Transferencias</button>
+		  <button type="button"  class="btn btn-secondary">{{trans}}</button>
       </a>
     </div>
     <div id="collapseFour" class="collapse" data-parent="#accordion">
@@ -133,19 +142,21 @@
 			</tr>
 			</thead>
 			<tbody>
-			  {%for r in transferencia%}
+			 {%for r in rs%} 			 
+			 {% if r.2=='TRANSFERENCIA' %}
 			  <tr>
-					<td>{{r.0}}</td>
+						<td>{{r.3.strftime('%d/%m/%Y') }}</td>
+					<td>{{r.4}}</td>
 					<td>{{r.1}}</td>
-					<td>{{r.2}}</td>
-					<td style="text-align:right">{{r.3}}</th>					
-				</tr>	
+					<td style="text-align:right">{{r.5}}</th>					
+				</tr>				
+				{%endif%}
 			  {%endfor%}
 			<tr>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>								
-				<td  style="text-align:right"><strong>{{ detalle|sum(attribute=3) }}</strong></td>
+				<td  style="text-align:right"><strong>{{trans }}</strong></td>
 			</tr>
 			</tbody>
 		</table>
@@ -156,7 +167,8 @@
   <div class="card">
     <div class="card-header">
       <a class="collapsed card-link" data-toggle="collapse" href="#collapseFive">
-       <span class="badge badge-primary">Cheques</span>  <span class="badge badge-secondary">{{totcheque}}</span>
+        <button type="button"  class="btn btn-primary">Cheques</button>
+		  <button type="button"  class="btn btn-secondary">{{cheque}}</button>
       </a>
     </div>
     <div id="collapseFive" class="collapse" data-parent="#accordion">
@@ -171,19 +183,21 @@
 			</tr>
 			</thead>
 			<tbody>
-			  {%for r in cheque%}
+			 {%for r in rs%} 			 
+			 {% if r.2=='CHEQUE' %}
 			  <tr>
-					<td>{{r.0}}</td>
+						<td>{{r.3.strftime('%d/%m/%Y') }}</td>
+					<td>{{r.4}}</td>
 					<td>{{r.1}}</td>
-					<td>{{r.2}}</td>
-					<td style="text-align:right">{{r.3}}</th>					
-				</tr>	
-			  {%endfor%}
+					<td style="text-align:right">{{r.5}}</th>					
+				</tr>					
+				{%endif%}
+			  {%endfor%} 
 			<tr>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>								
-				<td  style="text-align:right"><strong>{{ detalle|sum(attribute=3) }}</strong></td>
+				<td  style="text-align:right"><strong>{{cheque}}</strong></td>
 			</tr>
 			</tbody>
 		</table>

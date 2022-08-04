@@ -1,0 +1,273 @@
+{% extends "layout.html" %} {% block title %} Artículos {% endblock %} {% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col md-12">
+            <div class="jumbotron p-3">
+                <input type="text" placeholder="Buscar" onkeyup="search(this.value)" size="6"> <button type="button" class="btn btn-primary btn-sm">Buscar</button> <a href="/view_art_tmp" type="button" class="btn btn-info btn-sm">Detalle</a> <button type="button"
+                    class="btn btn-success float-right btn-sm" data-toggle="modal" data-target="#mymodal">Nuevo</button> {% with messages = get_flashed_messages() %} {% if messages %} {% for message in messages %} {% if 'CANCELADA' in message %}
+                <!-- SI ESTA LA PALABRA EXISTE EN EL MENSAJE MUESTO LA CLASE WARNING SI NO SUCCESS-->
+                <div class="alert alert-danger alert-dismissable" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="close">
+                                    <span aria-hidden="true">x</span>
+                                </button> {{message}}
+                </div>
+                {% else %}
+                <div class="alert alert-success alert-dismissable" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="close">
+                                    <span aria-hidden="true">x</span>
+                                </button> {{message}}
+                </div>
+                {% endif %} {% endfor %} {% endif %} {% endwith %}
+
+                <table class="table table-hover table-active table-sm">
+                    <tr>
+                        <!-- <th>id</th> -->
+                        <!-- <th>Código</th> -->
+                        <th>Artículo</th>
+                        <th>Precio</th>
+                    </tr>
+
+                    <tbody id="search_art2">
+
+                        {% for row in articulos %}
+
+                        <tr>
+                            <!-- <td>{{row.0}}</td> -->
+                            <!-- <td>{{row.2}}</td> -->
+                            <td> <a href="#" data-toggle="modal" data-target="#modaledit{{row.0}}"> {{row.2}} </a> </td>
+
+                            <td>{{row.5}}</td>
+                            <!--
+                            <td>
+                                <a href="/update_art/{{row.0}}" class="btn btn-default btn-xs" data-toggle="modal" data-target="#modaledit{{row.0}}"> <img src="/static/images/edit.png" alt="Editar" width="24" height="24"> </a>
+                            </td>
+                            -->
+                        </tr>
+
+
+                        <div id="borrar{{row.0}}" class="modal fade" role="dialog">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h4 class="modal-title">Borra el Registro ?</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form name="borra" action="/delete_art/{{row.0}}" method="POST">
+                                            <div class="form-group">
+                                                <button class="btn btn-primary" type="submit">borrar</button>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Agregar Artículo a Comprobante-->
+                        <div id="modaledit{{row.0}}" class="modal fade" role="dialog">
+
+                            <div class="modal-dialog">
+
+                                <div class="modal-content">
+
+                                    <div class="modal-header">
+                                        <h4 class="modal-title">Agregar Item</h4>
+                                    </div>
+
+                                    <div class="modal-body">
+                                        <form name="editcli" action="{{url_for('insert_art_tmp')}}" method="POST">
+                                            <div class="form-group">
+                                                <input type="hidden" name="id_art" value="{{row.0}}">
+                                                <input type="hidden" name="codigo" value="{{row.1}}">
+                                                <input type="hidden" name="iva" value="{{row.7}}">
+                                                <input type="hidden" name="usuario" value="{{session['usuario']}}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>Artículo:</label>
+                                                <textarea id="articulo" name="articulo" rows="2" cols="60" maxlength="150" >{{row.2}}</textarea>
+                                                <!--<input type="text" class="form-control" name="articulo" value="{{row.2}}" maxlength="150">-->
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>Cantidad:</label>
+                                                <input type="number" step="0.01" min="1" class="form-control" id="cantidad" name="Cantidad" value="1" autofocus>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>Precio :</label>
+                                                <input type="number" step="0.01" min="0.01" class="form-control" id="precio" name="precio" value="{{row.5}}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>% Descuento:</label>
+                                                <input type="number" step="0.01" min="0" class="form-control" name="dto">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <button class="btn btn-primary" type="submit" onclick="if validar()== false {return false}">Agregar</button>
+                                            </div>
+                                        </form>
+
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Salir</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <!-- Modal Add  -->
+            <div id="mymodal" class="modal fade" role="dialog">
+
+                <div class="modal-dialog">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+                            <h4 class="modal-title">Nuevo Artículo</h4>
+                        </div>
+
+                        <div class="modal-body">
+                            <form action="{{url_for('insert_art')}}" method="POST">
+                                <input type="hidden" name="parametro" value="1">
+                                <div class="form-group">
+                                    <label>Código:</label>
+                                    <input type="number" class="form-control" name="codigo" min="1" value="{{ ultimo.0 }}">
+                                </div>
+                                <div class="form-group">
+                                    <label>Artículo:</label>
+                                    <input type="text" class="form-control" name="articulo">
+                                </div>
+                                <div class="form-group">
+                                    <label>Rubro.:</label>
+                                    <select id="id_rubro" class="form-control" name="id_rubro"> 
+                                            {% for rub in rubros %}
+                                                <option value="{{rub.0}}"> {{rub.1}}</option>
+                                            {% endfor %} 
+                                        </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Costo:</label>
+                                    <input type="number" step="0.01" min="0" class="form-control" name="costo">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Precio 1:</label>
+                                    <input type="number" step="0.01" min="0" class="form-control" name="precio1">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Precio 2:</label>
+                                    <input type="number" step="0.01" min="0" class="form-control" name="precio2">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>I.V.A.:</label>
+                                    <input type="number" step="0.01" min="0" class="form-control" name="iva">
+                                </div>
+                                <div class="form-group">
+                                    <button class="btn btn-primary" type="submit">Añadir Artículo</button>
+                                </div>
+
+                            </form>
+
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Salir</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+
+
+
+{% block script %}
+
+<script type="text/javascript">
+    function search(v) {
+        $.post('/articulos_fa', {
+            buscar: v
+        }, function(data) {
+            $('#search_art2').html(data);
+        });
+    }
+</script>
+
+<script type="text/javascript">
+$('#estados').change(function() { 
+    let estado = $( "#estados" ).val();
+    location.href = "../ver_trabajos?estado="+estado;
+});
+
+$('.guardar').on('click', function() {
+    
+    let datos = {
+        estado: $('#e_estado').val(),
+        id_ot: $('#e_id_ot').val(),
+        importe: $('#e_importe').val()
+    }
+
+    $.ajax({
+        url: "../abm_admin_ftrab",
+        type: "POST",
+        data: datos,
+        success: function(data) {
+            console.log('Data: '+data)
+            if (data.type == 'ok') {
+                location.reload()
+            }
+        },
+        error: function() {
+            alert('ERROR,  CAGASTE FUEGO')
+        }
+    });
+})
+
+
+function editar(id_ot) {
+    let datos = { 'id_ot': id_ot}
+    $.ajax({
+        url: "../edit_admin_ftrab",
+        type: "POST",
+        data: datos,
+        success: function(data) {
+            console.log(data)
+            if (data.type == 'ok') {
+                //location.reload()
+                let datos = data.data[0];
+                titulo =  'Editando Trabajo ' +' Nº: '+ datos[0] 
+                $(".modal-title").text(titulo);
+                $("#e_id_ot").val(datos[0])
+                $("#e_estado").val(datos[1])
+                $("#e_importe").val(datos[2])
+
+                $('#modalEdit').modal("show")
+            }
+        },
+        error: function() {
+            alert('ERROR,  CAGASTE FUEGO')
+        }
+    });
+}
+
+</script>
+{% endblock %}    

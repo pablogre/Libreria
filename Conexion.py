@@ -1,11 +1,10 @@
 import pymysql.cursors 
 
 def conexion():
-    c = pymysql.connect(host='138.36.236.45' ,
+    c = pymysql.connect(host='127.0.0.1' ,
                              user= 'root', 
-                             password= 'kagupuVU87', 
-                             #db= 'gestion',
-                             db= 'sqldata',
+                             password= 'cl1v2%2605', 
+                             db= 'libreria',
                              charset='utf8mb4'
                              )
     return c	

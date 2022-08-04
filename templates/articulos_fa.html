@@ -1,4 +1,4 @@
-{% extends "layout.html" %} {% include "header.html" %} {% block title %} Artículos {% endblock %} {% block body %}
+{% extends "layout.html" %}  {% block title %} Artículos {% endblock %} {% block body %}
 <div class="container">
     <div class="row">
         <div class="col md-12">
@@ -21,8 +21,6 @@
 
                 <table class="table table-hover table-active table-sm">
                     <tr>
-                        <!-- <th>id</th> -->
-                        <!-- <th>Código</th> -->
                         <th>Artículo</th>
                         <th>Precio</th>
                     </tr>
@@ -32,90 +30,12 @@
                         {% for row in articulos %}
 
                         <tr>
-                            <!-- <td>{{row.0}}</td> -->
-                            <!-- <td>{{row.2}}</td> -->
-                            <td> <a href="#" data-toggle="modal" data-target="#modaledit{{row.0}}"> {{row.2}} </a> </td>
-
+                           
+                            <!-- <td> <a href="#" data-toggle="modal" data-target="#modaledit{{row.0}}"></a> {{row.2}} </a> </td> -->
+                            <td> <button  type="button" class="btn btn-default btn-xs" style="color:dodgerblue;" onclick="editar( {{row.0}} ) ">{{row.2}}</button> </td>
                             <td>{{row.5}}</td>
-                            <!--
-                            <td>
-                                <a href="/update_art/{{row.0}}" class="btn btn-default btn-xs" data-toggle="modal" data-target="#modaledit{{row.0}}"> <img src="/static/images/edit.png" alt="Editar" width="24" height="24"> </a>
-                            </td>
-                            -->
+
                         </tr>
-
-
-                        <div id="borrar{{row.0}}" class="modal fade" role="dialog">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h4 class="modal-title">Borra el Registro ?</h4>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form name="borra" action="/delete_art/{{row.0}}" method="POST">
-                                            <div class="form-group">
-                                                <button class="btn btn-primary" type="submit">borrar</button>
-                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Modal Agregar Artículo a Comprobante-->
-                        <div id="modaledit{{row.0}}" class="modal fade" role="dialog">
-
-                            <div class="modal-dialog">
-
-                                <div class="modal-content">
-
-                                    <div class="modal-header">
-                                        <h4 class="modal-title">Agregar Item</h4>
-                                    </div>
-
-                                    <div class="modal-body">
-                                        <form name="editcli" action="{{url_for('insert_art_tmp')}}" method="POST">
-                                            <div class="form-group">
-                                                <input type="hidden" name="id_art" value="{{row.0}}">
-                                                <input type="hidden" name="codigo" value="{{row.1}}">
-                                                <input type="hidden" name="iva" value="{{row.7}}">
-                                                <input type="hidden" name="usuario" value="{{session['usuario']}}">
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label>Artículo:</label>
-                                                <input type="text" class="form-control" name="articulo" value="{{row.2}}" maxlength="150">
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label>Cantidad:</label>
-                                                <input type="number" step="0.01" min="1" class="form-control" id="cantidad" name="Cantidad" value="1" autofocus>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label>Precio :</label>
-                                                <input type="number" step="0.01" min="0.01" class="form-control" id="precio" name="precio" value="{{row.5}}">
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label>% Descuento:</label>
-                                                <input type="number" step="0.01" min="0" class="form-control" name="dto">
-                                            </div>
-
-                                            <div class="form-group">
-                                                <button class="btn btn-primary" type="submit" onclick="if validar()== false {return false}">Agregar</button>
-                                            </div>
-                                        </form>
-
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Salir</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
 
                         {% endfor %}
                     </tbody>
@@ -194,14 +114,142 @@
     </div>
 </div>
 
+
+ <!-- Modal Agregar Artículo a Comprobante-->
+ <div id="modaledit" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Agregar Item</h4>
+            </div>
+
+            <div class="modal-body">
+                <!-- <form name="editcli" action="{{url_for('insert_art_tmp')}}" method="POST"> -->
+                    <div class="form-group">
+                        <input type="hidden" id="id_art">
+                        <input type="hidden" id="codigo">
+                        <input type="hidden" id="barras">
+                        <input type="hidden" id="iva">
+                        <input type="hidden" name="usuario" id="usuario" value="{{session['usuario']}}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Artículo:</label>
+                        <textarea id="articulo" name="articulo" rows="2" cols="60" maxlength="150" ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cantidad:</label>
+                        <input type="number" step="0.01" min="1" class="form-control" id="cantidad" name="Cantidad" value="1" autofocus>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Precio :</label>
+                        <input type="number" step="0.01" min="0.01" class="form-control" id="precio" name="precio" value="{{articulos[0][5]}}"} >
+                    </div>
+
+                    <div class="form-group">
+                        <label>% Descuento:</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="dto" name="dto">
+                    </div>
+
+                    <div class="form-group">
+                        <button class="btn btn-primary" type="submit" onclick="guardar()">Agregar</button>
+                    </div>
+                <!-- </form> -->
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Salir</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block script %}
+
 <script type="text/javascript">
-    function search(v) {
-        $.post('/articulos_fa', {
-            buscar: v
-        }, function(data) {
+
+function search(v) {
+    $.post('/articulos_fa', {
+        buscar: v
+    }, function(data) {
             $('#search_art2').html(data);
         });
     }
-</script>
+ 
+  /////////////////////////////////////////////////////////////////////  
+    function editar(id_art) {
+        let datos = { 'id_art': id_art}
+        $.ajax({
+            url: "../edit_arti_ajax",
+            type: "POST",
+            data: datos,
+            
+            success: function(data) {
+                
+                if (data.type == 'ok') {
+                    //location.reload()
+                    let articulo = data.articulos[0];
+                    let rubros = data.rubros;
+                    let ali_iva = data.ali_iva;
+                    titulo =  'Agrega Articulo ' +' Nº: '+ articulo[0]
+                    $(".modal-title").text(titulo);
+                    $("#id_art").val(articulo[0]);
+                    $("#codigo").val(articulo[1]);
+                    $("#rubro").val(articulo[3]);
+                    $("#barras").val(articulo[9]);
+                    $("#articulo").val(articulo[2]);
+                    $("#costo").val(articulo[4]);
+                    $("#precio").val(articulo[5]);
+                    $("#precio2").val(articulo[6]);
+                    $("#iva").val(articulo[7])
+                    console.log(articulo)
+                    $('#modaledit').modal("show")
+                }
+            },
+            error: function() {
+                alert('ERROR,  CAGASTE FUEGO')
+            }
+        });
+    }
+    
+ ////////////////////////////////////////////////////////  
+function guardar() { 
+   let datos = {
+       id_art: $('#id_art').val(),
+       codigo: $('#codigo').val(),
+       barras: $('#barras').val(),
+       articulo: $('#articulo').val(),
+       cantidad: $('#cantidad').val(),
+       precio: $('#precio').val(),
+       cantidad:$('#cantidad').val(),
+       dto: $('#dto').val(),
+       iva: $('#iva').val(),
+       usuario: $('#usuario').val()
+       }
+   console.log(datos)    
+   $.ajax({
+       url: "/insert_art_tmp_ajax/",
+       type: "POST",
+       data: datos,
 
-{% endblock %}
+       success: function(data) {
+           console.log('Data: '+data)
+           if (data.type == 'ok') {
+               location.href = "/view_art_tmp";
+               //location.reload()
+           }
+       },
+       error: function() {
+           alert('ERROR,  CAGASTE FUEGO')
+       }
+   });
+}
+
+</script>
+{% endblock %} 

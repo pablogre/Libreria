@@ -1,0 +1,126 @@
+<div id="accordion" class="col md-12">
+  <div class="card">
+    <div class="card-header">
+      <a class="card-link" data-toggle="collapse" href="#collapseOne">
+    <button type="button"  class="btn btn-primary">Facturas</button>
+	<button type="button"  class="btn btn-secondary">{{facturas}}</button>
+      </a>
+    </div>
+    <div id="collapseOne" class="collapse show" data-parent="#accordion">
+      <div class="card-body">
+        <table class="table">
+			<thead> 
+			<tr>
+				<th  scope="col">Fecha</th>
+				<th  scope="col">Comprobante</th>
+				<th  scope="col">Cliente</th>
+				<th  scope="col" style="text-align:right">Total</th>				
+			</tr>
+			</thead>
+			<tbody>
+			 {%for r in rs%} 			
+			 {% if r.13 > 0 and  r.13 < 4   %}
+			  <tr>
+						<td>{{r.3.strftime('%d/%m/%Y') }}</td>
+					<td>{{r.4}} {{r.2}}</td>
+					<td>{{r.1}}</td>
+					<td style="text-align:right">{{r.5}}</th>					
+				</tr>					
+				{%endif%}
+			  {%endfor%}
+			<tr>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>								
+				<td  style="text-align:right"><strong>{{ facturas }}</strong></td>
+			</tr>
+			</tbody>
+		</table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <a class="collapsed card-link" data-toggle="collapse" href="#collapseTwo">
+    <button type="button"  class="btn btn-primary">Internos</button>
+	<button type="button"  class="btn btn-secondary">{{internos}}</button>
+      </a>
+    </div>
+    <div id="collapseTwo" class="collapse" data-parent="#accordion">
+      <div class="card-body">
+        <table class="table">
+			<thead>
+			<tr>
+				<th  scope="col">Fecha</th>
+				<th  scope="col">Comprobante</th>
+				<th  scope="col">Cliente</th>
+				<th  scope="col" style="text-align:right">Total</th>				
+			</tr>
+			</thead>
+			<tbody>
+			   {%for r in rs%} 			
+			 {% if r.13 == 4   %}
+			  <tr>
+						<td>{{r.3.strftime('%d/%m/%Y') }}</td>
+					<td>{{r.4}} {{r.2}}</td>
+					<td>{{r.1}}</td>
+					<td style="text-align:right">{{r.5}}</th>					
+				</tr>					
+				{%endif%}
+			  {%endfor%}
+			<tr>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>								
+				<td  style="text-align:right"><strong>{{ internos }}</strong></td>
+			</tr>
+			</tbody>
+		</table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <a class="collapsed card-link" data-toggle="collapse" href="#collapseThree">
+       <button type="button"  class="btn btn-primary">Recibos</button>
+	  <button type="button"  class="btn btn-secondary">{{recibos}}</button>
+      </a>
+    </div>
+    <div id="collapseThree" class="collapse" data-parent="#accordion">
+      <div class="card-body">
+         <table class="table">
+			<thead>
+			<tr>
+				<th  scope="col">Fecha</th>
+				<th  scope="col">Comprobante</th>
+				<th  scope="col">Cliente</th>
+				<th  scope="col" style="text-align:right">Total</th>				
+			</tr>
+			</thead>
+			<tbody>
+			  {%for r in rs%} 			
+			 {% if r.13 ==0   %}
+			  <tr>
+						<td>{{r.3.strftime('%d/%m/%Y') }}</td>
+					<td>{{r.4}} {{r.2}}</td>
+					<td>{{r.1}}</td>
+					<td style="text-align:right">{{r.5}}</th>					
+				</tr>					
+				{%endif%}
+			  {%endfor%}
+			<tr>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>								
+				<td  style="text-align:right"><strong>{{ recibos }}</strong></td>
+			</tr>
+			</tbody>
+		</table>
+      </div>
+    </div>
+  </div>
+
+  </div>
+</div>

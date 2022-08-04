@@ -1,4 +1,4 @@
-from flask import Blueprint,Flask, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint,Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from Resumenes import *
 from random import randint
 from Conexion import *
@@ -9,6 +9,7 @@ import time
 import datetime
 import os
 import pymysql.cursors 
+import json
 
 app = Flask(__name__,static_url_path='/static')
 app.register_blueprint(resumenes)
@@ -489,8 +490,8 @@ def articulos():
         filtro = filtro + request.form['buscar'].strip()+filtro
 
     cur = connection.cursor()
-    query = 'SELECT * FROM articulos  where id_empresa = %s and articulo like %s order by articulo'
-    params=[id_empresa, filtro]
+    query = 'SELECT * FROM articulos where id_empresa = %s and articulo like %s or codigo like %s or barras like %s  order by articulo limit 100'
+    params=[id_empresa, filtro, filtro, filtro]
     cur.execute(query, params)
     data = cur.fetchall()
     cur.close()
@@ -503,52 +504,57 @@ def articulos():
         return render_template("articulos.html", articulos = data, rubros = rub, ali_iva = alicuotas, ultimo = ult)
  
 
-
-#this route is for inserting data to database via html forms
-@app.route('/insert_art/', methods = ['POST'])
-def insert_art():
+@app.route('/edit_arti_ajax', methods = ['GET','POST'])
+def edit_arti_ajax():
     if not session.get('id_empresa'):
         return render_template('login.html')
 
-    if request.method == 'POST':
-            try:
-                codigo = request.form['codigo']
-                articulo = request.form['articulo']
-                articulo = articulo.upper()
-                id_rubro = request.form['id_rubro']
-                costo = request.form['costo']
-                precio1 = request.form['precio1']
-                precio2 = request.form['precio2']
-                iva = request.form['iva']
-                id_empresa = session['id_empresa']
+    id_art = request.form['id_art']
+    ### rubros
+    id_empresa = session['id_empresa']
+    connection=conexion()
+    cur = connection.cursor()
+    query = 'select * from rubros where id_empresa = %s order by rubro'
+    params = [id_empresa]
+    cur.execute(query, params)
+    rub = cur.fetchall()
+    cur.close()
+    
+    ### proximo codigo de art ultimo + 1
+    cur = connection.cursor()
+    query = "select max(codigo)+1 as codigo from articulos where id_empresa = %s"
+    params = [id_empresa]
+    cur.execute(query, params)
+    ult = cur.fetchone()
+    cur.close()
 
-                connection=conexion()
-                cur = connection.cursor()
-                query = 'insert into articulos (codigo, articulo, id_rubro, costo, precio1, precio2, iva, id_empresa) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)'
-                params = [codigo, articulo, id_rubro, costo, precio1, precio2, iva, id_empresa]
-                print(params)
-                cur.execute(query,params)
-                connection.commit()
-                connection.close()
+   
+    
+    ### articulos
+    cur = connection.cursor()
+    query = 'SELECT id_art, codigo,articulo, id_rubro,convert(costo, char) as costo, convert(precio1, char) as precio1, convert(precio2,char) as precio2, convert(iva,char) as iva, id_empresa, barras  FROM articulos where id_empresa = %s and id_art = %s'
+    params=[id_empresa, id_art] 
+    cur.execute(query, params)
+    data = cur.fetchall()
+    cur.close()
+    print(data)
 
-                flash('Artículo Agregado Correctamente')
-            except:
-                flash('YA EXISTE, VERIFIQUE CÓDIGO OPERACION CANCELADA ')
-            # parametro viene de articulos_fa 
-            if request.form['parametro'] == '1':
-                return redirect(url_for('articulos_fa'))
-            else:    
-                  return redirect(url_for('articulos'))
- 
-#this is our update route where we are going to update our employee
-@app.route('/update_art', methods = ['GET', 'POST'])
-def update_art():
+    ### alicuotas iva
+    alicuotas = ['0.0', '10.5', '21.0', '27.0']
+
+    connection.close()
+    jok = {"type": "ok", "articulos": data, "rubros":rub, "ali_iva":alicuotas, "ultimo":ult}
+    return jsonify(jok) 
+    
+@app.route('/abm_arti_ajax', methods = ['GET', 'POST'])
+def abm_arti_ajax():
     if not session.get('id_empresa'):
         return render_template('login.html')
-
+    print('abm_arti_ajax')
     if request.method == 'POST':
         id_art = request.form['id_art']
         codigo = request.form['codigo']
+        barras = request.form['barras']
         articulo = request.form['articulo']
         articulo = articulo.upper()
         id_rubro = request.form['id_rubro']
@@ -567,9 +573,91 @@ def update_art():
                 costo = %s,
                 precio1 = %s,
                 precio2 = %s,
+                iva = %s,
+                barras = %s
+            WHERE id_art = %s
+        """, (codigo, articulo, id_rubro, costo, precio1, precio2, iva, barras, id_art))
+        flash('Registro modificado con Exito !')
+        connection.commit()
+        connection.close()
+         
+        jok = {"type": "ok", "status":200  }
+        return jsonify(jok) 
+ 
+
+
+#this route is for inserting data to database via html forms
+@app.route('/insert_art/', methods = ['POST'])
+def insert_art():
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+
+    if request.method == 'POST':
+            try:
+                codigo = request.form['codigo']
+                articulo = request.form['articulo']
+                articulo = articulo.upper()
+                id_rubro = request.form['id_rubro']
+                costo = request.form['costo']
+                precio1 = request.form['precio1']
+                precio2 = request.form['precio2']
+                stock = request.form['stock']
+                st_min = request.form['st_min']
+                iva = request.form['iva']
+                id_empresa = session['id_empresa']
+
+                connection=conexion()
+                cur = connection.cursor()
+                query = 'insert into articulos (codigo, articulo, id_rubro, costo, precio1, precio2, stock, st_min, iva, id_empresa) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)'
+                params = [codigo, articulo, id_rubro, costo, precio1, precio2, stock, st_min, iva, id_empresa]
+                print(params)
+                cur.execute(query,params)
+                connection.commit()
+                connection.close()
+
+                flash('Artículo Agregado Correctamente')
+            except:
+                flash('YA EXISTE, VERIFIQUE CÓDIGO OPERACION CANCELADA ')
+            # parametro viene de articulos_fa 
+            if request.form['parametro'] == '1':
+                return redirect(url_for('articulos_fa'))
+            else:    
+                  return redirect(url_for('articulos'))
+ 
+#this is our update route where we are going to update our articulos
+@app.route('/update_art', methods = ['GET', 'POST'])
+def update_art():
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+
+    if request.method == 'POST':
+        id_art = request.form['id_art']
+        codigo = request.form['codigo']
+        articulo = request.form['articulo']
+        articulo = articulo.upper()
+        id_rubro = request.form['id_rubro']
+        costo = request.form['costo']
+        precio1 = request.form['precio1']
+        precio2 = request.form['precio2']
+        stock = request.form['stock']
+        st_min = request.form['st_min']
+        iva = request.form['iva']
+    
+        connection=conexion()
+        cur = connection.cursor()
+        cur.execute("""
+            UPDATE articulos
+            SET codigo = %s,
+                articulo = %s,
+                id_rubro = %s,
+                costo = %s,
+                precio1 = %s,
+                precio2 = %s,
+                stock = %s,
+                st_min = %s,
                 iva = %s
             WHERE id_art = %s
-        """, (codigo, articulo, id_rubro, costo, precio1, precio2, iva, id_art))
+        """, (codigo, articulo, id_rubro, costo, precio1, precio2,stock, st_min, iva, id_art))
         flash('Registro modificado con Exito !')
         connection.commit()
         connection.close()
@@ -578,11 +666,25 @@ def update_art():
 
  
 #Borrar articulos
-@app.route('/delete_art/<id>', methods = ['GET', 'POST'])
-def delete_art(id):
+# @app.route('/delete_art/<id>', methods = ['GET', 'POST'])
+# def delete_art(id):
+#     if not session.get('id_empresa'):
+#         return render_template('login.html')
+
+#     connection=conexion()
+#     cur = connection.cursor()
+#     cur.execute('DELETE FROM articulos WHERE id_art = {0}'.format(id))
+#     connection.commit()
+#     flash('Registro borrado !')
+#     connection.close()
+
+#     return redirect(url_for('articulos'))
+
+@app.route('/delete_art_ajax', methods = ['GET', 'POST'])
+def delete_art():
     if not session.get('id_empresa'):
         return render_template('login.html')
-
+    id = request.form['id_art']
     connection=conexion()
     cur = connection.cursor()
     cur.execute('DELETE FROM articulos WHERE id_art = {0}'.format(id))
@@ -590,7 +692,10 @@ def delete_art(id):
     flash('Registro borrado !')
     connection.close()
 
-    return redirect(url_for('articulos'))
+    jok = {"type": "ok", "status":200  }
+    return jsonify(jok) 
+
+
 
 @app.route('/articulos_fa', methods = ['GET', 'POST'])
 def articulos_fa():
@@ -626,8 +731,10 @@ def articulos_fa():
         filtro = filtro + request.form['buscar'].strip()+filtro
 
     cur = connection.cursor()
-    query = 'SELECT * FROM articulos where id_empresa = %s and articulo like %s order by articulo'
-    params=[id_empresa, filtro]
+    #query = 'SELECT * FROM articulos where id_empresa = %s and articulo like %s order by articulo'
+    #params=[id_empresa, filtro]
+    query = 'SELECT * FROM articulos where id_empresa = %s and articulo like %s or codigo like %s or barras like %s  order by articulo limit 100'
+    params=[id_empresa, filtro, filtro, filtro]
     cur.execute(query, params)
     data = cur.fetchall()
     cur.close()
@@ -641,6 +748,7 @@ def articulos_fa():
     cur.close()
     connection.close()
 
+    print(articulos)
     if request.method == 'POST':
         return render_template("search_art2.html", articulos = data, rubros = rub)
     else:   
@@ -709,6 +817,46 @@ def insert_art_tmp():
         connection.close()
 
         return redirect(url_for('view_art_tmp'))
+
+
+
+@app.route('/insert_art_tmp_ajax/', methods = ['GET', 'POST'])
+def insert_art_tmp_ajax():
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+
+    if request.method == 'POST':
+        id_empresa = session['id_empresa']
+        usuario = request.form['usuario']
+        id_art = request.form['id_art']  
+        articulo = request.form['articulo']
+        precio = request.form['precio']
+        cantidad = request.form['cantidad'] 
+        iva = request.form['iva']
+        dto = request.form['dto']
+        #Fecha actual
+        fecha = date.today()
+        if cantidad == 0 or cantidad == "":
+            flash(" LA CANTIDAD Y PRECIO NO PUEDEN SER CERO OPERACION CANCELADA")
+            #return redirect(url_for('view_art_tmp'))
+            jok = {"type": "Error"}
+            return jsonify(jok) 
+
+        connection=conexion()
+        cur = connection.cursor()
+        query = "insert into factura_tmp (id_empresa, usuario, id_art, articulo, precio, cantidad, iva, dto, fecha) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+        params = [id_empresa, usuario, id_art, articulo, precio, cantidad, iva, dto, fecha]
+        cur.execute(query, params)
+        connection.commit()
+        cur.close()
+        connection.close()
+
+        jok = {"type": "ok"}
+        return jsonify(jok) 
+        #return redirect(url_for('view_art_tmp'))
+
+
+
 
 # Borra el item de factura_tmp
 @app.route('/delete_art_tmp/<id_tmp>', methods =['GET', 'POST'] )
@@ -917,7 +1065,7 @@ def val_mp(t_mp, t_fa, id_cliente):
                 #Saco el ultimo interno 
                 connection=conexion()
                 cur = connection.cursor()
-                query = "select ifnull( max(numero),0)+1 as numero from facturas where id_empresa = %s and tipo_comp = %s"
+                query = "select ifnull( max(numero),0)+1 as numero from facturas where id_empresa = %s and id_tipo_comp = %s"
                 params = [id_empresa, tipo_comp]
                 cur.execute(query, params)
                 data = cur.fetchall()
@@ -929,9 +1077,10 @@ def val_mp(t_mp, t_fa, id_cliente):
                 
                 # print('Inserto en facturas')
                 #Inserto en facturas
+                # Cuando grabas un INTERNO Tenes poner en FACTURAS.tipo_comp va en cero y FACTURAS.id_tipo_comp=4
                 cur = connection.cursor()
-                query = "insert into facturas (id_cliente, fecha, total, puerto, numero, id_empresa, tipo_comp, letra, dni, cliente) values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                params = [id_cliente, fecha, total , puerto, numero, id_empresa, tipo_comp, letra, dni, cliente]
+                query = "insert into facturas (id_cliente, fecha, total, puerto, numero, id_empresa, tipo_comp, letra, dni, cliente, id_tipo_comp) values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                params = [id_cliente, fecha, total , puerto, numero, id_empresa, 0, letra, dni, cliente, 4]
                 cur.execute(query, params)
                 connection.commit()
                 
@@ -1023,7 +1172,7 @@ def val_mp(t_mp, t_fa, id_cliente):
                         if (data[0]) =='':
                             print('sume 1 ')
                            
-                            #quiere decir que la quiere decir que no hay nada en observaciones..entonces puede que tarde en pasar ..vuelvo a intetar
+                            #quiere decir  que no hay nada en observaciones..entonces puede que tarde en pasar ..vuelvo a intetar
                             cont01+=1                            
                         else: #quiere decir que hay algun menseje para mostrar de afip lo mando
                             cont01=17 #fuerzo la salida proque hay error
@@ -1111,10 +1260,10 @@ def cta_cte(id):
     params = [id]
     cur.execute(query, params)
     cliente = cur.fetchall()
-
-    # saldo ant
+    # ifnull(sum(case when facturas.id_tipo_comp = 3 then facturas_mpagos.importe * -1 else facturas_mpagos.importe end),0) - (select ifnull(sum(recibos.total),0)  from recibos 
+    # saldo ant   select ifnull(sum(facturas_mpagos.importe),0)- (select ifnull(sum(recibos.total),0)  from recibos 
     query = '''
-                select ifnull(sum(facturas_mpagos.importe),0)- (select ifnull(sum(recibos.total),0)  from recibos 
+                select ifnull(sum(case when facturas.id_tipo_comp = 3 then facturas_mpagos.importe * -1 else facturas_mpagos.importe end),0) - (select ifnull(sum(recibos.total),0)  from recibos 
                 where id_cliente = %s and recibos.fecha < %s and id_empresa = %s) as rec, facturas.id_cliente 
                 from facturas_mpagos 
                 left join facturas on facturas.id_factura = facturas_mpagos.id_factura 
@@ -1131,6 +1280,7 @@ def cta_cte(id):
             concat(CASE WHEN facturas.id_tipo_comp = 1 THEN 'FC '
             WHEN facturas.id_tipo_comp = 2 THEN 'ND '
             WHEN facturas.id_tipo_comp = 3 THEN 'NC '
+            WHEN facturas.id_tipo_comp = 4 THEN 'IN '
             END  ,  facturas.letra,' ',lpad(facturas.puerto,5,'0'),'-',lpad(facturas.numero,8,'0')) as nro,
             case when facturas.id_tipo_comp = 3 then facturas_mpagos.importe * -1
             else facturas_mpagos.importe end, facturas.id_factura,facturas.id_cliente,facturas.id_empresa
@@ -1167,8 +1317,10 @@ def ver_fact():
         if tipo == 'REC':
             query = "select m_pago, obser, concat('REC ','00001-',lpad(recibos.numero,8,'0')) as nro, total, id  from recibos where id = %s"
         else:
-    
-            data1 = gen_pdf_fisc( id_factura )
+            if tipo == 'IN ':
+                data1 = gen_pdf_int( id_factura )
+            else:
+                data1 = gen_pdf_fisc( id_factura )
             if data1:
                 print(data1)
                 filename  = data1[0]
@@ -1178,6 +1330,7 @@ def ver_fact():
                     select DATE_FORMAT(facturas.fecha, '%%d/%%m/%%Y') as fecha, concat(CASE WHEN facturas.id_tipo_comp = 1 THEN 'FC '
                     WHEN facturas.id_tipo_comp = 2 THEN 'NC '
                     WHEN facturas.id_tipo_comp = 3 THEN 'ND '
+                    WHEN facturas.id_tipo_comp = 4 THEN 'IN '
                     END  ,  facturas.letra,' ',lpad(facturas.puerto,5,'0'),'-',lpad(facturas.numero,8,'0')) as nro,
                     factura_items.articulo, factura_items.cantidad, factura_items.dto, factura_items.precio, factura_items.id_factura 
                     from factura_items 
@@ -1228,17 +1381,39 @@ def insert_mp2(id):
         return redirect(url_for('cta_cte',id=id))
 
 
-@app.route('/delete_reci/<id_fac>/<id_clie>', methods = ['GET','POST'] )
-def delete_reci(id_fac,id_clie):
+@app.route('/delete_reci/<id_fac>/<id_clie>/<comp>', methods = ['GET','POST'] )
+def delete_reci(id_fac,id_clie,comp):
     if request.method == 'POST':
-        connection=conexion()
-        cur = connection.cursor()
-        query = "delete from recibos where id = %s"
-        params = [id_fac]
-        cur.execute(query, params)
-        connection.commit()
-        cur.close()
-        connection.close()
+        if comp[0:3] == 'REC':
+            connection=conexion()
+            cur = connection.cursor()
+            query = "delete from recibos where id = %s"
+            params = [id_fac]
+            cur.execute(query, params)
+            connection.commit()
+            cur.close()
+            connection.close()
+        elif comp[0:2] == 'IN':
+            connection=conexion()
+            cur = connection.cursor()
+            query = "delete from facturas where id_factura = %s"
+            params = [id_fac]
+            cur.execute(query, params)
+            connection.commit()
+           
+            query = "delete from factura_items where id_factura = %s"
+            params = [id_fac]
+            cur.execute(query, params)
+            connection.commit()
+
+            query = "delete from facturas_mpagos where id_factura = %s"
+            params = [id_fac]
+            cur.execute(query, params)
+            connection.commit()
+            cur.close()
+            connection.close()
+
+
         return redirect(url_for('cta_cte',id=id_clie))
 
 
@@ -1254,7 +1429,17 @@ def envio_mail():
         except:
             return "HUBO UN ERROR, EL CORREO NO FUE ENVIADO !!!"
    
-
+@app.route('/envio_mail2/<file_name>/<email>', methods = ['GET','POST'] )
+def envio_mail2(file_name, email):
+    print("estoy en envio mail")
+    print(file_name, " --- ", email)
+    try:
+        send_mail(file_name,  email)
+        return render_template('mensaje.html',mensaje='CORREO ENVIADO CON EXITO !!!' ) 
+        #return 'CORREO ENVIADO CON EXITO !!!'
+    except:
+        return render_template('mensaje.html',mensaje='HUBO UN ERROR, EL CORREO NO FUE ENVIADO !!!' ) 
+        #return "HUBO UN ERROR, EL CORREO NO FUE ENVIADO !!!"
     
 
     #return render_template('ver_comp.html', fileName= fileName, email= email)   
@@ -1264,6 +1449,11 @@ def envio_mail():
 def ver_comp():
      fileName = '1_B00013_00000003.pdf'
      return render_template('ver_comp.html', fileName= fileName)    
+
+
+@app.route('/listas', methods = ['GET','POST'] )
+def listas():
+    return render_template('listas.html')   
 
 
 @app.route('/salir', methods = ['GET','POST'] )

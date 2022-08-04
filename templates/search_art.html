@@ -1,109 +1,216 @@
 {% for row in articulos %}
-                        
+
     <tr>
-        <td> <a href="/update_art/{{row.0}}" data-toggle="modal" data-target="#modaledit{{row.0}}"> {{row.2}} </a> </td> 
+        <td> <a href="/update_art/{{row.0}}" data-toggle="modal" data-target="#modaledit{{row.0}}"> {{row.2}} </a> </td>
         <td>{{row.5}}</td>
         <td>
-           <!--  <a href="/update_art/{{row.0}}" class="btn btn-default btn-xs" data-toggle="modal" data-target="#modaledit{{row.0}}"> <img src="/static/images/edit.png" alt="Editar" width="24" height="24"> </a> -->
-            <!-- <a href="/delete_cli/{{row.0}}" class="btn btn-default btn-xs" onclick="return confirm('Borra el Registro ?')"><img src="/static/images/eliminar.png" alt="Borra" width="24" height="24"></a> -->
-            <button class="btn btn-default btn-xs" data-toggle="modal" data-target="#borrar{{row.0}}"><img src="/static/images/eliminar.png" alt="Borra" width="24" height="24"></button>
+            <button  type="button" class="btn btn-default btn-xs" onclick="borrar( {{row.0}} )"><img src="/static/images/eliminar.png" alt="Borra" width="24" height="24"></button> 
+        </td>
+        <td>
+            <button  type="button" class="btn btn-default btn-xs" onclick="editar( {{row.0}} )"><img src="/static/images/edit.png" alt="Editar" width="24" height="24"></button> 
+            <!-- <a href="/update_art/{{row.0}}" class="btn btn-default btn-xs" data-toggle="modal" data-target="#modaledit{{row.0}}"> <img src="/static/images/edit.png" alt="Editar" width="24" height="24"> </a>  -->
         </td>
     </tr>
+{% endfor %}
 
-
-    <div id="borrar{{row.0}}" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Borra el Registro ?</h4>
-                </div>
-                <div class="modal-body">
-                    <form name="borra" action="/delete_art/{{row.0}}"  method="POST" >
-                        <div class="form-group">
-                            <button class="btn btn-primary" type="submit">borrar</button>
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>         
-                        </div>
-                    </form>
+<div id="borrar" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Borra el Registro ?</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <input type="hidden" id="id_art">
+                    <button class="btn btn-primary" onclick="borrar2()" type="submit">borrar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-        <!-- Modal Edit Artículo-->
-    <div id="modaledit{{row.0}}" class="modal fade" role="dialog">
+<!-- Modal Edit Artículo-->
+<div id="modalEdit" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Editando Datos</h4>
+            </div>
 
-        <div class="modal-dialog">
+            <div class="modal-body">
+                <!-- <form name="editcli" action="{{url_for('update_art')}}" method="POST"> -->
+                    <div class="form-group">
+                        <input type="hidden" id="e_id_art" name="e_id_art" >
 
-            <div class="modal-content">
-
-                <div class="modal-header">
-                    <h4 class="modal-title">Editando Datos</h4>
-                </div>
-        
-                <div class="modal-body">
-                    <form name="editcli" action="{{url_for('update_art')}}"  method="POST" >
-                        <div class="form-group">
-                            <input type="hidden"  name="id_art" value="{{row.0}}">
-
-                            <label>Código:</label>
-                            <input type="number" class="form-control" name="codigo" min="1" value="{{row.1}}">
-                        </div>
-                        <div class="form-group">
-                            <label>Artículo:</label>                                 
-                            <input type="text" class="form-control" name="articulo" value="{{row.2}}">
-                        </div>
-                        <div class="form-group">
-                            <label>Rubro.:</label>
-                            <select id="id_rubro"  class="form-control" name="id_rubro"> 
+                        <label>Código:</label>
+                        <input type="number" class="form-control" id= "e_codigo" name="e_codigo" min="1" >
+                    </div>
+                    <div class="form-group">
+                        <label>Cód. de Barras:</label>
+                        <input type="text" class="form-control" id="e_barras" name="e_barras" >
+                    </div>
+                    <div class="form-group">
+                        <label>Artículo:</label>
+                        <input type="text" class="form-control" id="e_articulos" name="e_articulo" >
+                    </div>
+                    <div class="form-group">
+                        <label>Rubro.:</label>
+                        <select id="e_id_rubro" class="form-control" name="e_id_rubro"> 
                                 {% for rub in rubros %}
-                                    {% if rub.0 == row.3 %}
+                                    {% if rub.0 == articulos.3 %}
                                         <option value="{{rub.0}}" selected=selected> {{rub.1}}</option>
                                     {% else %}    
                                         <option value="{{rub.0}}"> {{rub.1}}</option>
                                     {% endif %}    
                             {% endfor %} 
                             </select>
-                        </div>
+                    </div>
 
-                        <div class="form-group">
-                            <label>Costo:</label>
-                            <input type="number"  step="0.01" min="0" class="form-control" name="costo" value="{{row.4}}">
-                        </div>
+                    <div class="form-group">
+                        <label>Costo:</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="e_costo" name="e_costo" >
+                    </div>
 
-                        <div class="form-group">
-                            <label>Precio 1:</label>
-                            <input type="number" step="0.01" min="0"  class="form-control" name="precio1" value="{{row.5}}">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Precio 2:</label>
-                            <input type="number" step="0.01" min="0" class="form-control" name="precio2"  value="{{row.6}}">
-                        </div>
+                    <div class="form-group">
+                        <label>Precio 1:</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="e_precio1" name="e_precio1">
+                    </div>
 
-                        <div class="form-group">
-                            <label>Seleccione alícuota de I.V.A.:</label>
-                            <select name="iva" id="iva" required="1" class="form-control">
+                    <div class="form-group">
+                        <label>Precio 2:</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="e_precio2"name="e_precio2" >
+                    </div>
+
+                    <div class="form-group">
+                        <!--
+                            <label>I.V.A.:</label> -->
+                        <label>Seleccione alícuota de I.V.A.:</label>
+                        <select name="e_iva" id="e_iva" required="1" class="form-control">
                                 {% for ali in ali_iva %} 
-                                    {% if ali == row.7 %}
-                                        <option value="{{ali.0}}" selected=selected> {{ali}} </option>
+                                    {% if ali ==  articulos.7 %}
+                                        <option value="{{ali}}" selected=selected> {{ali}} </option>
                                     {% else %}
                                         <option value="{{ali}}">{{ali}}</option>  
                                     {% endif %}     
                                 {% endfor %}
                             </select>
-                        </div>
+                    </div>
 
-                        <div class="form-group">
-                            <button class="btn btn-primary" type="submit">Guardar</button>
-                        </div>
-                    </form>
+                    <div class="form-group">
+                        <button class="btn btn-primary guardar" type="submit">Guardar</button>
+                        <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Salir</button>
+                    </div>
+                <!-- </form> -->
 
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Salir</button>                                                      
-                </div>
-            </div>                         
+            </div>
+            <!-- <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Salir</button>
+            </div> -->
         </div>
     </div>
+</div>
 
-{% endfor %}
+
+
+{% block script %}
+
+
+<script type="text/javascript">
+///////////////////////////////////////////
+
+function borrar(id_art) {
+    let datos = { 'id_art': id_art}
+        $("#id_art").val(id_art)
+        $('#borrar').modal("show")
+    }
+   
+
+function borrar2() {
+    let datos = { 'id_art': $("#id_art").val()}
+    $.ajax({
+        url: "../delete_art_ajax",
+        type: "POST",
+        data: datos,
+       
+        success: function(data) {
+            console.log(data)
+            if (data.type == 'ok') {
+                //$('#borrar').modal("hide")
+                location.reload()
+            }
+        },
+        error: function() {
+            alert('ERROR,  CAGASTE FUEGO')
+        }
+    });
+}
+
+$('.guardar').on('click', function() {
+    
+    let datos = {
+        id_art: $('#e_id_art').val(),
+        codigo: $('#e_codigo').val(),
+        barras: $('#e_barras').val(),
+        articulo: $('#e_articulos').val(),
+        id_rubro: $('#e_id_rubro').val(),
+        costo: $('#e_costo').val(),
+        precio1: $('#e_precio1').val(),
+        precio2: $('#e_precio2').val(),
+        iva: $('#e_iva').val()
+    }
+
+    $.ajax({
+        url: "../abm_arti_ajax",
+        type: "POST",
+        data: datos,
+        success: function(data) {
+            console.log('Data: '+data)
+            if (data.type == 'ok') {
+                location.reload()
+            }
+        },
+        error: function() {
+            alert('ERROR,  CAGASTE FUEGO')
+        }
+    });
+})
+
+
+function editar(id_art) {
+    let datos = { 'id_art': id_art}
+    $.ajax({
+        url: "../edit_arti_ajax",
+        type: "POST",
+        data: datos,
+       
+        success: function(data) {
+            console.log(data)
+            if (data.type == 'ok') {
+                //location.reload()
+                let articulos = data.articulos[0];
+                let rubros = data.rubros;
+                let ali_iva = data.ali_iva;
+                titulo =  'Editando Articulo ' +' Nº: '+ articulos[0]
+                $(".modal-title").text(titulo);
+                $("#e_id_art").val(articulos[0]);
+                $("#e_codigo").val(articulos[1]);
+                $("#e_rubro").val(articulos[3]);
+                $("#e_barras").val(articulos[9]);
+                $("#e_articulos").val(articulos[2]);
+                $("#e_costo").val(articulos[4]);
+                $("#e_precio1").val(articulos[5]);
+                $("#e_precio2").val(articulos[6]);
+                $("#e_iva").val(articulos[7])
+
+                $('#modalEdit').modal("show")
+            }
+        },
+        error: function() {
+            alert('ERROR,  CAGASTE FUEGO')
+        }
+    });
+}
+
+</script>
+{% endblock %}    
