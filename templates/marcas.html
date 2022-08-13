@@ -23,19 +23,18 @@
                 <table class="table table-hover table-active table-sm">
                     <tr>
                         <!--<th>Código</th>-->
-                        <th>Rubro</th>
+                        <th>Id. Marca</th>
+                        <th>Marca</th>
                         <th>Acción</th>
 
                     </tr>
 
-                    <tbody id="search_rub">
-                        {% for row in rubros %}
+                    <tbody id="search_marca">
+                        {% for row in marcas %}
                         <tr>
-                            <!--<td>{{row.0}}</td>-->
-                            <td><a href="/update_ru/{{row.0}}" data-toggle="modal" data-target="#modaledit{{row.0}}"> {{row.1.upper()}} </a> </td>
+                            <td>{{row.0}}</td> <!-- ID MARCA -->
+                            <td><a href="/update_marca/{{row.0}}" data-toggle="modal" data-target="#modaledit{{row.0}}"> {{row.1.upper()}} </a> </td>
                             <td>
-                                <!--  <a href="/update_ru/{{row.0}}" class="btn btn-default btn-xs" data-toggle="modal" data-target="#modaledit{{row.0}}"> <img src="/static/images/edit.png" alt="Editar" width="24" height="24"> </a> -->
-                                <!-- <a href="/delete_cli/{{row.0}}" class="btn btn-default btn-xs" onclick="return confirm('Borra el Registro ?')"><img src="/static/images/eliminar.png" alt="Borra" width="24" height="24"></a> -->
                                 <button class="btn btn-default btn-xs" data-toggle="modal" data-target="#borrar{{row.0}}"><img src="/static/images/eliminar.png" alt="Borra" width="24" height="24"></button>
                             </td>
                         </tr>
@@ -45,10 +44,10 @@
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h4 class="modal-title">Borra el Registro ?</h4>
+                                        <h4 class="modal-title">Borrar Marca?</h4>
                                     </div>
                                     <div class="modal-body">
-                                        <form name="borra" action="/delete_ru/{{row.0}}" method="POST">
+                                        <form name="borra" action="/delete_marca/{{row.0}}" method="POST">
                                             <div class="form-group">
                                                 <button class="btn btn-primary" type="submit">Borrar</button>
                                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
@@ -59,7 +58,7 @@
                             </div>
                         </div>
 
-                        <!-- Modal Edit Rubro-->
+                        <!-- Modal Edit Marca-->
                         <div id="modaledit{{row.0}}" class="modal fade" role="dialog">
 
                             <div class="modal-dialog">
@@ -72,13 +71,13 @@
 
 
                                     <div class="modal-body">
-                                        <form name="editru" action="{{url_for('update_ru')}}" method="POST">
+                                        <form name="editmarca" action="{{url_for('update_marca')}}" method="POST">
                                             <div class="form-group">
-                                                <input type="hidden" name="id_rub" value="{{row.0}}">
+                                                <input type="hidden" name="id_marca" value="{{row.0}}">
                                             </div>
                                             <div class="form-group">
-                                                <label>Rubro:</label>
-                                                <input type="text" class="form-control" name="rubro" value="{{row.1}}" required>
+                                                <label>Marca:</label>
+                                                <input type="text" class="form-control" name="marca" value="{{row.1}}" required>
                                             </div>
                                             <div class="form-group">
                                                 <button class="btn btn-primary" type="submit">Guardar</button>
@@ -101,7 +100,7 @@
 
             </div>
 
-            <!-- Modal Add  -->
+            <!-- Modal Add Marca -->
             <div id="mymodal" class="modal fade" role="dialog">
 
                 <div class="modal-dialog">
@@ -109,19 +108,19 @@
                     <div class="modal-content">
 
                         <div class="modal-header">
-                            <h4 class="modal-title">Nuevo Rubro</h4>
+                            <h4 class="modal-title">Nueva Marca</h4>
                         </div>
 
                         <div class="modal-body">
-                            <form action="insert_ru" method="POST">
+                            <form action="insert_marca" method="POST">
 
                                 <div class="form-group">
-                                    <label>Rubro:</label>
-                                    <input type="text" class="form-control" name="rubro" id="rubro" required="1">
+                                    <label>Marca:</label>
+                                    <input type="text" class="form-control" name="marca" required="1">
                                 </div>
 
                                 <div class="form-group">
-                                    <button class="btn btn-primary" type="submit">Añadir Rubro</button>
+                                    <button class="btn btn-primary" type="submit">Añadir Marca</button>
                                 </div>
 
                             </form>
@@ -142,12 +141,14 @@
 
 <script type="text/javascript">
     function search(v) {
-        $.post('/rubros', {
+        console.log(v)
+        $.post('/marcas', {
             buscar: v
         }, function(data) {
-            $('#search_rub').html(data);
+            $('#search_marca').html(data);
         });
     }
 </script>
 
 {% endblock %}
+

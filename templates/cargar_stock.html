@@ -1,0 +1,247 @@
+{% extends "layout.html" %} {% include "header.html" %} {% block title %} Cargar Stock {% endblock %} {% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col md-12">
+            <div class="jumbotron p-3">
+                <div class="form-group">
+                    <h3><p style="text-decoration:underline">Carga Comp. de Proveedores</p></h3>
+                </div>
+                <div class="row">
+                    <div class="col-sm-3 col-md-3">
+                        <div class="form-group">
+                            <label for="fecha">Fecha del Comprobante:</label>
+                            <input autofocus class="form-control" type="date" id="fecha">
+                        </div>  
+                    </div>
+                    <div class="col-sm-3 col-md-3">
+                        <div class="form-group">
+                            <label for="nro_comp" onclick="prende()">Nro. de Comprobante:</label>
+                            <input class="form-control" type="text" id="nro_comp">
+                        </div>  
+                    </div>
+                    <div class="col-sm-3 col-md-3">
+                        <div class="form-group">
+                            <label for="importe" onclick="prende()">Importe del Comprobante:</label>
+                            <input class="form-control" type="number" id="importe">
+                        </div>  
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label onclick="prende()">Proveedor.:</label>
+                            <select id="id_prov" class="form-control" name="id_prov" onblur="apaga()" > 
+                                <option value="" disabled selected>Seleccione</option>
+                                {% for prov in proveedores %}
+                                    <option value="{{prov.0}}"> {{prov.0}} - {{prov.1}}</option>
+                                {% endfor %} 
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-3 col-md-6">
+                        <div class="form-group">
+                            <label for="fecha">Código de barras:</label>
+                            <input class="form-control" type="text" id="barras" placeholder="Buscar" onfocus="limpiar()" onblur="search()">
+                        </div>  
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>Articulos.:</label>
+                            <select id="id_art" class="form-control" name="id_art" onblur="search()"> 
+                                {% for art in articulos %}
+                                    <option value="{{art.0}}"> {{art.3}} - {{art.2}}</option>
+                                {% endfor %} 
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class=" col-md-12">
+                        <div class="form-group">
+                            <label for="costo">Artículo</label>
+                            <input class="form-control" type="text" id="articulo" >
+                        </div>
+                    </div>   
+                </div>   
+                <div class="row">     
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <input type="text" id="costo_ant" hidden>
+                            <input type="text" id="fecha_ant" hidden>
+                            <label for="costo">Precio de Costo</label>
+                            <input class="form-control" type="number" min="0" id="costo">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="costo">Cantidad</label>
+                            <input class="form-control" type="number" min="0" id="cantidad">
+                        </div>
+                    </div>    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            
+                            <button style="margin-top: 40px;" id="guardar" class="btn btn-primary float-right" onclick="guardar()">Guardar</button>
+                        </div>
+                    </div>    
+                </div>
+            </div>    
+        </div>    
+    </div>
+</div>
+{% endblock %}        
+
+
+{%block script%}
+
+<script type="text/javascript">
+
+function limpiar(){
+    $('#id_art').val("")
+    $('#barras').val("")
+    return
+}
+
+function apaga(){
+    $('#fecha').prop("disabled", true)
+    $('#importe').prop("disabled", true)
+    $('#nro_comp').prop("disabled", true)
+    $('#id_prov').prop("disabled", true)
+}
+
+function prende(){
+    $('#fecha').prop("disabled", false)
+    $('#importe').prop("disabled", false)
+    $('#nro_comp').prop("disabled", false)
+    $('#id_prov').prop("disabled", false)
+}
+
+
+function search(){
+    
+    if($("#barras").val() == "" || $("#barras").val() == null){
+        $("#barras").val("0")
+    }
+    if( $("#id_art").val() == "" || $("#id_art").val() == null){
+        $("#id_art").val("0")
+    }
+    let datos = { 
+        'barras': $("#barras").val(),
+        'id_art': $("#id_art").val()
+    }
+    console.log(datos)
+    $.ajax({
+        url: "../cargar_stock2",
+        type: "POST",
+        data: datos,
+      
+        success: function(data) {
+            console.log("fecha_ant: " + data.articulo[0][5])
+            if (data.type == 'ok') {
+                console.log("costo_ant: " + data.articulo[0][4] )
+                $('#barras').val(data.articulo[0][2])
+                $('#articulo').val(data.articulo[0][3])
+                $('#costo').val(data.articulo[0][4])
+                $('#id_art').val( data.articulo[0][0] )
+                $('#costo_ant').val(data.articulo[0][4])
+                $('#fecha_ant').val(data.articulo[0][5])
+                $('#costo').focus()
+                //location.reload()
+            }
+        },
+        error: function() {
+            swal("Error al Grabar !","","error")
+        }
+    });
+}
+
+function guardar(){
+    console.log("Proveedor: " + $("#id_prov").val())
+    console.log("id_art: " + $("#id_art").val())
+    console.log("articulo: " + $("#articulo").val())
+      
+    if($("#fecha").val() == "" || $("#fecha").val() == null){
+        swal("Ingrese La Fecha del Comprobante","","warning")
+        return
+    }
+    if($("#nro_comp").val() == "" || $("#nro_comp").val() == null){
+        swal("Ingrese el Nro. del Comprobante","","warning")
+        return
+    }
+    if($("#importe").val() == "" || $("#importe").val() == null){
+        swal("Ingrese el Importe del Comprobante","","warning")
+        return
+    }
+    if($("#id_prov").val() == "" || $("#id_prov").val() == null){
+        swal("Ingrese el Proveedor","","warning")
+        return
+    }
+    if($("#id_art").val() == "" || $("#id_art").val() == null){
+        swal("Seleccione el Artículo","","warning")
+        return
+    }
+    if($("#id_prov").val() == "" || $("#id_prov").val() == null){
+        swal("Ingrese el Proveedor","","warning")
+        return
+    }
+    if($("#costo").val() == "" || $("#costo").val() == null){
+        swal("Ingrese el Costo","","warning")
+        return
+    }
+    if($("#cantidad").val() <= 0){
+        swal("La Cantidad debe ser Mayor a Cero","","warning")
+        return
+    }
+    if($("#cantidad").val() == "" || $("#cantidad").val() == null){
+        swal("Ingrese la Cantidad","","warning")
+        return
+    }
+    console.log("costo_ant 2: " + $("#costo").val() )
+    let datos = {
+        'fecha': $("#fecha").val(),
+        'id_prov' : $("#id_prov").val(),
+        'nro_comp': $("#nro_comp").val(),
+        'importe': $("#importe").val(),
+        'barras': $("#barras").val(),
+        'id_art' : $("#id_art").val(),
+        'costo' : $("#costo").val(),
+        'cantidad' : $("#cantidad").val(),
+        'costo_ant' :  $("#costo_ant").val(),
+        'fecha_ant' :  $("#fecha_ant").val()
+    }
+    $.ajax({
+        url: "../mod_stock",
+        type: "POST",
+        data: datos,
+       
+        success: function(data) {
+            console.log(data.type)
+            if (data.type == 'ok') {
+                $('#articulo').val("")
+                $('barras').val("")
+                $('#costo').val("")
+                $('#id_art').val("")
+                $('#cantidad').val("")
+                $('#barras').focus()
+                //location.reload()
+                swal("Modificacion Exitosa !","","success")
+            }else{
+                if(data.type == '404'){
+                swal("Verifique Proveedor !","No puede cargar otro Proveedor en el mismo Comprobante","error")     
+            }
+        }
+        },
+        error: function() {
+            swal("Error al Grabar !","","error")
+            }
+        })
+    }
+
+
+</script>
+{%endblock%}

@@ -32,8 +32,8 @@
                         <tr>
                            
                             <!-- <td> <a href="#" data-toggle="modal" data-target="#modaledit{{row.0}}"></a> {{row.2}} </a> </td> -->
-                            <td> <button  type="button" class="btn btn-default btn-xs" style="color:dodgerblue;" onclick="editar( {{row.0}} ) ">{{row.2}}</button> </td>
-                            <td>{{row.5}}</td>
+                            <td> <button  type="button" class="btn btn-default btn-xs" style="color:dodgerblue;" onclick="editar( {{row.0}} ) ">{{row.3}}</button> </td>
+                            <td>{{row.9}}</td>
 
                         </tr>
 
@@ -191,24 +191,23 @@ function search(v) {
             data: datos,
             
             success: function(data) {
-                
+                console.log("putooooooooooo")
                 if (data.type == 'ok') {
                     //location.reload()
                     let articulo = data.articulos[0];
-                    let rubros = data.rubros;
-                    let ali_iva = data.ali_iva;
                     titulo =  'Agrega Articulo ' +' Nº: '+ articulo[0]
                     $(".modal-title").text(titulo);
                     $("#id_art").val(articulo[0]);
                     $("#codigo").val(articulo[1]);
-                    $("#rubro").val(articulo[3]);
-                    $("#barras").val(articulo[9]);
-                    $("#articulo").val(articulo[2]);
-                    $("#costo").val(articulo[4]);
-                    $("#precio").val(articulo[5]);
-                    $("#precio2").val(articulo[6]);
-                    $("#iva").val(articulo[7])
+                    $("#rubro").val(articulo[4]);
+                    $("#barras").val(articulo[2]);
+                    $("#articulo").val(articulo[3]);
+                    $("#costo").val(articulo[7]);
+                    $("#precio").val(articulo[9]);
+                    $("#precio2").val(articulo[11]);
+                    $("#iva").val(articulo[14])
                     console.log(articulo)
+                    console.log("puto el que lee")
                     $('#modaledit').modal("show")
                 }
             },

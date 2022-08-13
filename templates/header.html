@@ -4,7 +4,7 @@
     </div>
     <nav class="navbar navbar-expand-md bg-dark navbar-dark">
         <h4>
-            <p style="color:white"> {{ session['razon_soc'] }} </p>
+            <p class="navbar-nav" style="color:white; text-decoration: underline;"> {{ session['razon_soc'] }} </p>
         </h4>
         
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
@@ -29,15 +29,37 @@
                         <a class="dropdown-item" href="/view_art_tmp">Fact. Electrónica</a>
                     </div>
                 </li> -->
-
-                <li class="nav-item">
-                    <a class="nav-link" href="/rubros">Rubros</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/articulos">Artículos</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbardrop" data-toggle="dropdown">
+                        Tablas
+                    </a>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="/rubros">Rubros</a>
+                        <a class="dropdown-item" href="/marcas">Marcas</a>
+                        <a class="dropdown-item" href="/proveedores">Proveedores</a>
+                    </div>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="/articulos" id="navbardrop" data-toggle="dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbardrop" data-toggle="dropdown">
+                        Articulos
+                    </a>
+                   
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="/articulos">Artículos</a>
+                        
+                        <div class="dropdown-divider"></div>
+                           
+                        <a class="dropdown-item" href="/cargar_stock">Carga Comp. de Proveedores</a>
+                        <a class="dropdown-item" href="/ver_comp_prov/{{ session['fe_hoy'] }}">Listar Comp. de Proveedores</a>
+                        <a class="dropdown-item" href="/nuevo_precio">Cambio de Precios</a>
+                        
+                    </div> 
+                </li>
+                <!-- <li class="nav-item">
+                    <a class="nav-link" href="/articulos">Artículos</a>
+                </li> -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbardrop" data-toggle="dropdown">
                         Informes
                     </a>
                     <div class="dropdown-menu">

@@ -1,0 +1,117 @@
+{% extends "layout.html" %} {% include "header.html" %} {% block title %} Proveedores {% endblock %} {% block body %}
+
+
+<div class="jumbotron p-3">
+    <div class="row">
+      <div class="col-md-2"></div> 
+      <div class="col-md-8">
+        <h3> <p style="text-decoration:underline"> Modificación de Precios </p> </h3>
+        <div class="form-group">
+            <label>Rubro: </label>
+            <select id="id_rubro" name="id_rubro" class="form-control" > 
+                <option value="0" selected  >Seleccione: </option> 
+                {% for rub in rubros %}
+                    <option value="{{rub.0}}">{{rub.1}}</option>   
+                {% endfor %} 
+            </select>
+        </div>
+      
+        <div class="form-group">
+              <label>Marca: </label>
+              <select id="id_marca" class="form-control" name="id_marca"> 
+                  <option value="0" selected >Seleccione: </option> 
+                  {% for marca in marcas %}
+                        <option value="{{marca.0}}">{{marca.1}}</option>   
+                  {% endfor %} 
+              </select>
+        </div>
+      
+        <div class="form-group">
+              <label>Proveedor: </label>
+              <select id="id_proveedor" class="form-control" name="id_proveedor"> 
+                  <option value="0" selected >Seleccione: </option> 
+                  {% for prov in proveedores %}
+                          <option value="{{prov.0}}">{{prov.1}}</option> 
+                  {% endfor %} 
+              </select>
+        </div>
+        <div class="row">
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label>Porcentaje:</label>
+                    <input type="number" class="form-control" id="porcentaje" name="porcentaje" required>
+                </div> 
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <button class="btn btn-primary guardar" type="submit" onclick="nuevoPrecio()">Guardar</button>
+        </div> 
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+
+
+
+ <script type="text/javascript">
+    function nuevoPrecio(){
+        if($('#id_rubro').val() == 0 && $('#id_marca').val() == 0 && $('#id_proveedor').val() == 0 ){
+            swal("Debe seleccionar al menos un Grupo","", "warning");
+            return
+        }
+        if($('#porcentaje').val()==0){
+            swal("Ingrese Porcentaje","", "warning");
+            return
+        }
+
+        swal({
+            title: "Esta Seguro ?",
+            text: "Este proceso Cambiara los Precios !",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+            })
+            .then((willDelete) => {
+            if (willDelete) {
+                let datos = {
+                id_rubro: $('#id_rubro').val(),
+                id_marca: $('#id_marca').val(),
+                id_proveedor: $('#id_proveedor').val(),
+                porcentaje: $('#porcentaje').val(),
+                }
+
+                console.log(datos);
+                $.ajax({
+                url: "../update_precio",
+                type: "POST",
+                data: datos,
+                success: function(data) {
+                    console.log('Data: '+data)
+                    if (data.type == 'ok') {
+                        swal("Los Precios fueron modificados!", {
+                            icon: "success",
+                            } );
+                        /* location.reload()  */
+                    }
+                },
+                error: function() {
+                    alert('ERROR,  ATENCIÓN')
+                }
+            });
+                swal("Los Precios fueron modificados!", {
+                icon: "success",
+                } );
+            } else {
+                swal("Proceso Cancelado!");
+            }
+            
+            });
+        
+    }
+
+           
+ </script>
+
+{% endblock %}

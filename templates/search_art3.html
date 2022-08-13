@@ -1,0 +1,151 @@
+
+
+{% for row in articulos %}
+                        
+<tr>
+   <!--  <td> <a href="#" data-toggle="modal" data-target="#modaledit{{row.0}}"> {{row.3}} </a> </td>  -->
+    <td> <button  type="button" class="btn btn-default btn-xs" style="color:dodgerblue;" onclick="editar2( {{row.0}} ) ">{{row.3}}</button> </td>
+    <td>{{row.9}}</td>
+</tr>
+
+
+                                             
+{% endfor %}
+
+<!-- Modal Edit Artículo-->
+
+ <!-- Modal Agregar Artículo a Comprobante-->
+ <div id="modaledit" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Agregar Item</h4>
+            </div>
+
+            <div class="modal-body">
+                <!-- <form name="editcli" action="{{url_for('insert_art_tmp')}}" method="POST"> -->
+                    <div class="form-group">
+                        <input type="hidden" id="id_art">
+                        <input type="hidden" id="codigo">
+                        <input type="hidden" id="barras">
+                        <input type="hidden" id="iva">
+                        <input type="hidden" name="usuario" id="usuario" value="{{session['usuario']}}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Artículo:</label>
+                        <textarea id="articulo" name="articulo" rows="2" cols="60" maxlength="150" ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cantidad:</label>
+                        <input type="number" step="0.01" min="1" class="form-control" id="cantidad" name="Cantidad" value="1" autofocus>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Precio :</label>
+                        <input type="number" step="0.01" min="0.01" class="form-control" id="precio" name="precio" value="{{articulos[0][5]}}"} >
+                    </div>
+
+                    <div class="form-group">
+                        <label>% Descuento:</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="dto" name="dto">
+                    </div>
+
+                    <div class="form-group">
+                        <button class="btn btn-primary" type="submit" onclick="guardar()">Agregar</button>
+                    </div>
+                <!-- </form> -->
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Salir</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+{% block script %}
+
+<script type="text/javascript">
+
+function search(v) {
+    $.post('/articulos_fa', {
+        buscar: v
+    }, function(data) {
+            $('#search_art2').html(data);
+        });
+    }
+ 
+  /////////////////////////////////////////////////////////////////////  
+    function editar2(id_art) {
+
+        let datos = { 'id_art': id_art}
+        $.ajax({
+            url: "../edit_arti_ajax",
+            type: "POST",
+            data: datos,
+            
+            success: function(data) {
+                
+                if (data.type == 'ok') {
+                    //location.reload()
+                    let articulo = data.articulos[0];
+                    let rubros = data.rubros;
+                    let ali_iva = data.ali_iva;
+                    titulo =  'Agrega Articulo ' +' Nº: '+ articulo[0]
+                    $(".modal-title").text(titulo);
+                    $("#id_art").val(articulo[0]);
+                    $("#codigo").val(articulo[1]);
+                    $("#barras").val(articulo[2]);
+                    $("#articulo").val(articulo[3]);
+                    $("#precio").val(articulo[9]);
+                    $("#iva").val(articulo[14])
+                    console.log(articulo)
+                    $('#modaledit').modal("show")
+                }
+            },
+            error: function() {
+                alert('ERROR,  CAGASTE FUEGO')
+            }
+        });
+    }
+    
+ ////////////////////////////////////////////////////////  
+function guardar() { 
+   let datos = {
+       id_art: $('#id_art').val(),
+       codigo: $('#codigo').val(),
+       barras: $('#barras').val(),
+       articulo: $('#articulo').val(),
+       cantidad: $('#cantidad').val(),
+       precio: $('#precio').val(),
+       cantidad:$('#cantidad').val(),
+       dto: $('#dto').val(),
+       iva: $('#iva').val(),
+       usuario: $('#usuario').val()
+       }
+   console.log(datos)    
+   $.ajax({
+       url: "/insert_art_tmp_ajax/",
+       type: "POST",
+       data: datos,
+
+       success: function(data) {
+           console.log('Data: '+data)
+           if (data.type == 'ok') {
+               location.href = "/view_art_tmp";
+               //location.reload()
+           }
+       },
+       error: function() {
+           alert('ERROR,  CAGASTE FUEGO')
+       }
+   });
+}
+
+</script>
+{% endblock %} 

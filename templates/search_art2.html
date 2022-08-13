@@ -1,17 +1,10 @@
+
 {% for row in articulos %}
                         
-<tr>
-    <!-- <td>{{row.0}}</td> -->
-    <!-- <td>{{row.2}}</td> -->
-    <td> <a href="#" data-toggle="modal" data-target="#modaledit{{row.0}}"> {{row.2}} </a> </td> 
-
-    <td>{{row.5}}</td>
-    <!--
-    <td>
-        <a href="/update_art/{{row.0}}" class="btn btn-default btn-xs" data-toggle="modal" data-target="#modaledit{{row.0}}"> <img src="/static/images/edit.png" alt="Editar" width="24" height="24"> </a>
-    </td>
-    -->
-</tr>
+    <tr>
+        <td> <a href="#" data-toggle="modal" data-target="#modaledit{{row.0}}"> {{row.3}} </a> </td> 
+        <td>{{row.9}}</td>
+    </tr>
 
     
     <div id="borrar{{row.0}}" class="modal fade" role="dialog">
@@ -32,17 +25,14 @@
         </div>
     </div>
 
-        <!-- Modal Edit Artículo-->
+    <!-- Modal Edit Artículo-->
     <div id="modaledit{{row.0}}" class="modal fade" role="dialog">
-    
         <div class="modal-dialog">
-
             <div class="modal-content">
-
                 <div class="modal-header">
                     <h4 class="modal-title">Editando Datos</h4>
                 </div>
-        
+    
                 <div class="modal-body">
                     <form name="editcli" action="{{url_for('update_art')}}"  method="POST" >
                         <div class="form-group">
@@ -51,7 +41,7 @@
                         </div>
                         <div class="form-group">
                             <label>Artículo:</label>                                 
-                            <input type="text" class="form-control" name="articulo" value="{{row.2}}">
+                            <input type="text" class="form-control" name="articulo" value="{{row.3}}">
                         </div>
 
                         <div class="form-group">
@@ -61,7 +51,7 @@
 
                         <div class="form-group">
                             <label>Precio :</label>
-                            <input type="number" step="0.01" min="0"  class="form-control" name="precio" value="{{row.5}}">
+                            <input type="number" step="0.01" min="0"  class="form-control" name="precio" value="{{row.9}}">
                         </div>
                         
                         <div class="form-group">

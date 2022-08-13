@@ -63,7 +63,7 @@
                             </div>
                         </div>
 
-                        <!-- Modal Agregar Artículo a Comprobante-->
+                        <!-- Modal EDITAR Artículo a Comprobante-->
                         <div id="modaledit{{row.0}}" class="modal fade" role="dialog">
 
                             <div class="modal-dialog">
@@ -212,62 +212,4 @@
     }
 </script>
 
-<script type="text/javascript">
-$('#estados').change(function() { 
-    let estado = $( "#estados" ).val();
-    location.href = "../ver_trabajos?estado="+estado;
-});
-
-$('.guardar').on('click', function() {
-    
-    let datos = {
-        estado: $('#e_estado').val(),
-        id_ot: $('#e_id_ot').val(),
-        importe: $('#e_importe').val()
-    }
-
-    $.ajax({
-        url: "../abm_admin_ftrab",
-        type: "POST",
-        data: datos,
-        success: function(data) {
-            console.log('Data: '+data)
-            if (data.type == 'ok') {
-                location.reload()
-            }
-        },
-        error: function() {
-            alert('ERROR,  CAGASTE FUEGO')
-        }
-    });
-})
-
-
-function editar(id_ot) {
-    let datos = { 'id_ot': id_ot}
-    $.ajax({
-        url: "../edit_admin_ftrab",
-        type: "POST",
-        data: datos,
-        success: function(data) {
-            console.log(data)
-            if (data.type == 'ok') {
-                //location.reload()
-                let datos = data.data[0];
-                titulo =  'Editando Trabajo ' +' Nº: '+ datos[0] 
-                $(".modal-title").text(titulo);
-                $("#e_id_ot").val(datos[0])
-                $("#e_estado").val(datos[1])
-                $("#e_importe").val(datos[2])
-
-                $('#modalEdit').modal("show")
-            }
-        },
-        error: function() {
-            alert('ERROR,  CAGASTE FUEGO')
-        }
-    });
-}
-
-</script>
 {% endblock %}    

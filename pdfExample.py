@@ -497,9 +497,11 @@ def gen_pdf_int(id):
     cur.close
     conn.close()
 
+
     # CARGO LA LISTA DE DATOS
     data2 = data[0]
-    
+    print(data2)
+
     # SACO EL MAIL DEL CLIENTE
     email = data2[65]
     if email == None:
@@ -688,4 +690,4 @@ def gen_pdf_int(id):
 
     return lista
 
-# gen_pdf_int(1)
+#gen_pdf_int(1)

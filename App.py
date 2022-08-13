@@ -53,7 +53,8 @@ def val_log():
             session['id_empresa'] = data[0][0]
             session['razon_soc'] = data[0][1]
             session['usuario'] = randint(0, 100000)
-           
+            session['fe_hoy'] = date.today()
+
             #return render_template('mensaje.html',mensaje='A FAVOR DE LEANDRO...' )   
             return render_template('factufacil.html')
         else:
@@ -403,7 +404,9 @@ def insert_ru():
         return render_template('login.html')
 
     if request.method == 'POST':
+       
         try:
+            connection = conexion()
             rubro = request.form['rubro']
             id_empresa = session['id_empresa']
             cur = connection.cursor()
@@ -412,11 +415,11 @@ def insert_ru():
             cur.execute(query,params)
             connection.commit()
             cur.close()
-
+            connection.close()
             flash('Rubro Agregado Correctamente')
         except:
 
-             flash('YA EXISTE ESE RUBRO OPERACION CANCELADA ')
+            flash('YA EXISTE ESE RUBRO OPERACION CANCELADA ')
 
         return redirect(url_for('rubros'))
  
@@ -469,12 +472,31 @@ def articulos():
         return render_template('login.html')
 
     id_empresa = session['id_empresa']
+    
+    ########## Rubros
     connection=conexion()
     cur = connection.cursor()
     query = 'select * from rubros where id_empresa = %s order by rubro'
     params = [id_empresa]
     cur.execute(query, params)
     rub = cur.fetchall()
+    cur.close()
+    print(rub)
+
+    ########## MARCAS
+    cur = connection.cursor()
+    query = 'select * from marcas where id_empresa = %s order by marca'
+    params = [id_empresa]
+    cur.execute(query, params)
+    marcas = cur.fetchall()
+    cur.close()
+
+    ########## Proveedores
+    cur = connection.cursor()
+    query = 'select * from proveedores where id_empresa = %s order by proveedor'
+    params = [id_empresa]
+    cur.execute(query, params)
+    proveedores = cur.fetchall()
     cur.close()
 
     ### proximo codigo de art ultimo + 1
@@ -490,26 +512,31 @@ def articulos():
         filtro = filtro + request.form['buscar'].strip()+filtro
 
     cur = connection.cursor()
-    query = 'SELECT * FROM articulos where id_empresa = %s and articulo like %s or codigo like %s or barras like %s  order by articulo limit 100'
+
+    query = '''
+                 SELECT id_art, codigo, barras, articulo, id_rubro, id_marca, id_prov, convert(costo, char) as costo, convert(margen1, char) as margen1, convert(precio1, char) as precio1,  convert(margen2, char) as margen2, convert(precio2,char) as precio2, convert(stock, char) as stock, convert(st_min, char) as st_min, convert(iva,char) as iva, DATE_FORMAT(fe_ult, '%%d/%%m/%%Y') as fe_ult, id_empresa  FROM articulos where id_empresa = %s and articulo like %s or codigo like %s or barras like %s  order by articulo limit 100
+            '''
+
     params=[id_empresa, filtro, filtro, filtro]
     cur.execute(query, params)
     data = cur.fetchall()
     cur.close()
-    alicuotas = [0.0, 10.5, 21.0, 27.0]
+    alicuotas = ['0.00', '10.50', '21.00', '27.00']
     connection.close()
 
     if request.method == 'POST':
-        return render_template("search_art.html", articulos = data, rubros = rub, ali_iva = alicuotas, ultimo = ult)
+        return render_template("search_art.html", articulos = data, rubros = rub, ali_iva = alicuotas, ultimo = ult, marcas = marcas, proveedores = proveedores)
     else:   
-        return render_template("articulos.html", articulos = data, rubros = rub, ali_iva = alicuotas, ultimo = ult)
+        return render_template("articulos.html", articulos = data, rubros = rub, ali_iva = alicuotas, ultimo = ult, marcas = marcas, proveedores = proveedores)
  
 
 @app.route('/edit_arti_ajax', methods = ['GET','POST'])
-def edit_arti_ajax():
+def  _ajax():
     if not session.get('id_empresa'):
         return render_template('login.html')
 
     id_art = request.form['id_art']
+
     ### rubros
     id_empresa = session['id_empresa']
     connection=conexion()
@@ -520,6 +547,22 @@ def edit_arti_ajax():
     rub = cur.fetchall()
     cur.close()
     
+    ########## MARCAS
+    cur = connection.cursor()
+    query = 'select * from marcas where id_empresa = %s order by marca'
+    params = [id_empresa]
+    cur.execute(query, params)
+    marcas = cur.fetchall()
+    cur.close()
+
+    ########## Proveedores
+    cur = connection.cursor()
+    query = 'select * from proveedores where id_empresa = %s order by proveedor'
+    params = [id_empresa]
+    cur.execute(query, params)
+    proveedores = cur.fetchall()
+    cur.close()
+
     ### proximo codigo de art ultimo + 1
     cur = connection.cursor()
     query = "select max(codigo)+1 as codigo from articulos where id_empresa = %s"
@@ -527,12 +570,13 @@ def edit_arti_ajax():
     cur.execute(query, params)
     ult = cur.fetchone()
     cur.close()
-
-   
     
     ### articulos
     cur = connection.cursor()
-    query = 'SELECT id_art, codigo,articulo, id_rubro,convert(costo, char) as costo, convert(precio1, char) as precio1, convert(precio2,char) as precio2, convert(iva,char) as iva, id_empresa, barras  FROM articulos where id_empresa = %s and id_art = %s'
+    query = '''
+             SELECT id_art, codigo, barras, articulo, id_rubro, id_marca, id_prov, convert(costo, char) as costo, convert(margen1, char) as margen1, convert(precio1, char) as precio1,  convert(margen2, char) as margen2, convert(precio2,char) as precio2, convert(stock, char) as stock, convert(st_min, char) as st_min, convert(iva,char) as iva, 
+             DATE_FORMAT(fe_ult, '%%d/%%m/%%Y') as fe_ult, id_empresa  FROM articulos where id_empresa = %s and id_art = %s
+             '''
     params=[id_empresa, id_art] 
     cur.execute(query, params)
     data = cur.fetchall()
@@ -540,49 +584,86 @@ def edit_arti_ajax():
     print(data)
 
     ### alicuotas iva
-    alicuotas = ['0.0', '10.5', '21.0', '27.0']
+    alicuotas = ['0.00', '10.50', '21.00', '27.00']
 
     connection.close()
-    jok = {"type": "ok", "articulos": data, "rubros":rub, "ali_iva":alicuotas, "ultimo":ult}
+    jok = {"type": "ok", "articulos": data, "rubros":rub, "ali_iva": alicuotas, "ultimo": ult, "marcas": marcas, "proveedores": proveedores}
     return jsonify(jok) 
     
-@app.route('/abm_arti_ajax', methods = ['GET', 'POST'])
-def abm_arti_ajax():
+
+ 
+@app.route('/mod_arti_ajax/<parametro>', methods = ['GET', 'POST'])
+def mod_arti_ajax(parametro):
     if not session.get('id_empresa'):
         return render_template('login.html')
-    print('abm_arti_ajax')
-    if request.method == 'POST':
+    print('mod_arti_ajax')
+    if request.method == 'POST': 
         id_art = request.form['id_art']
         codigo = request.form['codigo']
         barras = request.form['barras']
         articulo = request.form['articulo']
         articulo = articulo.upper()
         id_rubro = request.form['id_rubro']
+        id_marca = request.form['id_marca']
+        id_prov = request.form['id_prov']
         costo = request.form['costo']
+        margen1 = request.form['margen1']
         precio1 = request.form['precio1']
+        margen2 = request.form['margen2']
         precio2 = request.form['precio2']
+        stock = request.form['stock']
+        st_min = request.form['st_min']
         iva = request.form['iva']
-    
+        fe_ult = request.form['fe_ult']
+        id_empresa = session['id_empresa']
         connection=conexion()
         cur = connection.cursor()
-        cur.execute("""
-            UPDATE articulos
-            SET codigo = %s,
-                articulo = %s,
-                id_rubro = %s,
-                costo = %s,
-                precio1 = %s,
-                precio2 = %s,
-                iva = %s,
-                barras = %s
-            WHERE id_art = %s
-        """, (codigo, articulo, id_rubro, costo, precio1, precio2, iva, barras, id_art))
-        flash('Registro modificado con Exito !')
-        connection.commit()
-        connection.close()
+        print("id_rubro",id_rubro)
+        print("id_marca",id_marca)
+        print("id_prov",id_prov)
+        if parametro == "1" :
+            try:
+                cur.execute("""
+                        UPDATE articulos
+                        SET codigo = %s,
+                            barras = %s,
+                            articulo = %s,
+                            id_rubro = %s,
+                            id_marca = %s,
+                            id_prov = %s,
+                            costo = %s,
+                            margen1 = %s,
+                            precio1 = %s,
+                            margen2 = %s,
+                            precio2 = %s,
+                            stock = %s,
+                            st_min = %s,
+                            iva = %s,
+                            fe_ult = %s
+                        WHERE id_art = %s
+                    """, (codigo, barras, articulo, id_rubro, id_marca, id_prov, costo, margen1, precio1, margen2, precio2, stock, st_min, iva, fe_ult, id_art))
+            
+                flash('Registro Modificado con Exito !')
+                connection.commit()
+                connection.close()    
+            except:
+                 flash('Error al Grabar modificación !')
+        else:
+            try: 
+                connection=conexion()
+                cur = connection.cursor()
+                query = 'insert into articulos (codigo, barras, articulo, id_rubro, id_marca, id_prov, costo, margen1, precio1, margen2, precio2, stock, st_min, iva, fe_ult, id_empresa) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+                params = [codigo, barras, articulo, id_rubro, id_marca, id_prov, costo, margen1, precio1, margen2, precio2, stock, st_min, iva, fe_ult, id_empresa]
+                print(params)
+                cur.execute(query,params) 
+                flash('Artículo Agregado Correctamente')
+                connection.commit()
+                connection.close()    
+            except:
+                flash('YA EXISTE, VERIFIQUE CÓDIGO OPERACION CANCELADA ')  
          
         jok = {"type": "ok", "status":200  }
-        return jsonify(jok) 
+        return jsonify(jok)  
  
 
 
@@ -593,36 +674,45 @@ def insert_art():
         return render_template('login.html')
 
     if request.method == 'POST':
-            try:
-                codigo = request.form['codigo']
-                articulo = request.form['articulo']
-                articulo = articulo.upper()
-                id_rubro = request.form['id_rubro']
-                costo = request.form['costo']
-                precio1 = request.form['precio1']
-                precio2 = request.form['precio2']
-                stock = request.form['stock']
-                st_min = request.form['st_min']
-                iva = request.form['iva']
-                id_empresa = session['id_empresa']
+        #try:
+            print(request.form['id_rubro'])
+            codigo = request.form['codigo']
+            barras = request.form['barras']
+            articulo = request.form['articulo']
+            articulo = articulo.upper()
+            id_rubro = request.form['id_rubro']
+            id_marca = request.form['id_marca']
+            id_prov = request.form['id_prov']
+            costo = request.form['costo']
+            margen1 = request.form['margen1']
+            precio1 = request.form['precio1']
+            margen2 = request.form['margen2']
+            precio2 = request.form['precio2']
+            stock = request.form['stock']
+            st_min = request.form['st_min']
+            iva = request.form['iva']
+            id_empresa = session['id_empresa']
 
-                connection=conexion()
-                cur = connection.cursor()
-                query = 'insert into articulos (codigo, articulo, id_rubro, costo, precio1, precio2, stock, st_min, iva, id_empresa) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)'
-                params = [codigo, articulo, id_rubro, costo, precio1, precio2, stock, st_min, iva, id_empresa]
-                print(params)
-                cur.execute(query,params)
-                connection.commit()
-                connection.close()
+            connection=conexion()
+            cur = connection.cursor()
+            query = 'insert into articulos (codigo, barras, articulo, id_rubro, id_marca, id_prov, costo, margen1, precio1, margen2, precio2, stock, st_min, iva, id_empresa) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+            params = [codigo, barras, articulo, id_rubro, id_marca, id_prov, costo, margen1, precio1, margen2, precio2, stock, st_min, iva, id_empresa]
+            print(params)
+            cur.execute(query,params)
+            connection.commit()
+            connection.close()
 
-                flash('Artículo Agregado Correctamente')
-            except:
-                flash('YA EXISTE, VERIFIQUE CÓDIGO OPERACION CANCELADA ')
+            flash('Artículo Agregado Correctamente')
+        #except:
+            flash('YA EXISTE, VERIFIQUE CÓDIGO OPERACION CANCELADA ')
+
             # parametro viene de articulos_fa 
             if request.form['parametro'] == '1':
                 return redirect(url_for('articulos_fa'))
             else:    
-                  return redirect(url_for('articulos'))
+                return redirect(url_for('articulos'))
+
+
  
 #this is our update route where we are going to update our articulos
 @app.route('/update_art', methods = ['GET', 'POST'])
@@ -734,10 +824,14 @@ def articulos_fa():
     #query = 'SELECT * FROM articulos where id_empresa = %s and articulo like %s order by articulo'
     #params=[id_empresa, filtro]
     query = 'SELECT * FROM articulos where id_empresa = %s and articulo like %s or codigo like %s or barras like %s  order by articulo limit 100'
+
+    query = 'SELECT id_art, codigo, barras, articulo, id_rubro, id_marca, id_prov, convert(costo, char) as costo, convert(margen1, char) as margen1, convert(precio1, char) as precio1,  convert(margen2, char) as margen2, convert(precio2,char) as precio2, convert(stock, char) as stock, convert(st_min, char) as st_min, convert(iva,char) as iva, id_empresa  FROM articulos where id_empresa = %s and articulo like %s or codigo like %s or barras like %s  order by articulo limit 100' 
+
     params=[id_empresa, filtro, filtro, filtro]
     cur.execute(query, params)
     data = cur.fetchall()
     cur.close()
+    print(data)
 
      ### proximo codigo de art ultimo + 1
     cur = connection.cursor()
@@ -750,7 +844,8 @@ def articulos_fa():
 
     print(articulos)
     if request.method == 'POST':
-        return render_template("search_art2.html", articulos = data, rubros = rub)
+        print('----search_art2----')
+        return render_template("search_art3.html", articulos = data, rubros = rub)
     else:   
         return render_template("articulos_fa.html", articulos = data, rubros = rub, ultimo = ult)
 
@@ -1462,11 +1557,557 @@ def salir():
     return redirect(url_for('login'))    
 
 
+@app.route('/marcas', methods = ['GET','POST'])
+def marcas():
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+
+    id_empresa = session['id_empresa']
+
+    filtro = '%'
+    if request.method == 'POST':
+        filtro = filtro + request.form['buscar'] + filtro
+    
+    print(filtro)
+    
+    connection=conexion()
+    query = 'SELECT * FROM marcas where marca like %s and id_empresa = %s order by marca'
+    params = [filtro, id_empresa]
+    cur = connection.cursor()
+    cur.execute(query, params)
+    data = cur.fetchall()
+    cur.close()
+    connection.close()
+    if request.method == 'POST':
+        return render_template("search_marca.html", marcas = data)
+    else:
+        return render_template("marcas.html", marcas = data)
+ 
+
+
+@app.route('/insert_marca', methods = ['GET','POST'])
+def insert_marca():
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+
+    if request.method == 'POST':
+        try:
+            connection = conexion()
+            marca = request.form['marca']
+            id_empresa = session['id_empresa']
+            cur = connection.cursor()
+            query = 'insert into marcas (marca, id_empresa) values(%s, %s)'
+            params = [marca.upper(),id_empresa]
+            
+            print(params)
+            cur.execute(query,params)
+            connection.commit()
+            cur.close()
+
+            flash('Marca Agregada Correctamente')
+        except:
+            flash('YA EXISTE ESA MARCA OPERACION CANCELADA ')
+
+    return redirect(url_for('marcas'))
+ 
+
+
+@app.route('/update_marcas', methods = ['GET','POST'])
+def update_marca():
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+
+    if request.method == 'POST':
+        id_marca = request.form['id_marca']
+        marca = request.form['marca']
+
+        print(id_marca)
+        connection=conexion()
+        cur = connection.cursor()
+        query = 'update marcas set marca = %s where id_marca = %s'
+        params = [marca.upper(), id_marca]
+        cur.execute(query,params)
+        connection.commit()
+        cur.close()
+        connection.close()
+
+        flash('Registro modificado con Exito !')
+ 
+        return redirect(url_for('marcas'))
+
+#This route is for deleting our Marcas
+@app.route('/delete_marca/<id>', methods = ['GET', 'POST'])
+def delete_id_marca(id):
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+
+    connection=conexion()
+    cur = connection.cursor()
+    cur.execute('DELETE FROM marcas WHERE id_marca = {0}'.format(id))
+    connection.commit()
+    cur.close()
+    connection.close()
+
+    flash('Registro borrado !')
+  
+    return redirect(url_for('marcas'))
+
+
+@app.route('/nuevo_precio', methods = ['GET','POST'])
+def nuevo_precio():
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+
+    id_empresa = session['id_empresa']
+    
+    ########## Rubros
+    connection=conexion()
+    cur = connection.cursor()
+    query = 'select * from rubros where id_empresa = %s order by rubro'
+    params = [id_empresa]
+    cur.execute(query, params)
+    rub = cur.fetchall()
+    cur.close()
+    print(rub)
+
+    ########## MARCAS
+    cur = connection.cursor()
+    query = 'select * from marcas where id_empresa = %s order by marca'
+    params = [id_empresa]
+    cur.execute(query, params)
+    marcas = cur.fetchall()
+    cur.close()
+
+    ########## Proveedores
+    cur = connection.cursor()
+    query = 'select * from proveedores where id_empresa = %s order by proveedor'
+    params = [id_empresa]
+    cur.execute(query, params)
+    proveedores = cur.fetchall()
+    cur.close()
+
+    
+    return render_template("nuevo_precio.html", rubros = rub, marcas = marcas, proveedores = proveedores)
+
+@app.route('/update_precio', methods = ['GET', 'POST'])
+def update_precio():
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+  
+    if request.method == 'POST':
+     
+        id_rubro = request.form['id_rubro']
+        id_marca = request.form['id_marca']
+        id_proveedor = request.form['id_proveedor']
+        porcentaje = request.form['porcentaje']
+        condi1 = ""
+        condi2 = ""
+        condi3 = ""
+        param = []
+        param.append(porcentaje)
+        print("porcentaje:", porcentaje)
+        print("id_rubro:", id_rubro)
+        print("id_marca:", id_marca)
+        print("id_prov:", id_proveedor)
+        if id_rubro != '0':
+            condi1 =  " id_rubro = %s"
+            param.append(id_rubro)
+        if id_marca != '0':
+            if len(condi1) > 0:
+                condi2 =  " and id_marca = %s"
+                param.append(id_marca)
+        if id_proveedor != '0':
+            if len(condi2) > 0:
+                condi3 =  " and id_prov = %s"
+                param.append(id_proveedor)    
+    
+         
+        print("condi:",condi1 + condi2 + condi3)  
+        print('param:',param) 
+    
+        
+        query = "update articulos set costo = costo * (1 + %s /100) where " + condi1 + condi2 + condi3
+       
+        print('query:', query)
+        
+        connection=conexion()
+        cur = connection.cursor() 
+        cur.execute(query,param)
+        connection.commit()
+        cur.close()
+        connection.close() 
+        print('lo ejecuto')
+        
+        jok = {"type": "ok", "status":200  }
+        return jsonify(jok) 
+
+
+@app.route('/proveedores', methods = ['GET','POST'])
+def proveedores():
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+
+    id_empresa = session['id_empresa']
+    connection=conexion()
+    cur = connection.cursor()
+    query = 'select * from proveedores where id_empresa = %s order by id_prov ASC'
+    params = [id_empresa]
+    cur.execute(query, params)
+    rub = cur.fetchall()
+    cur.close()
+
+    filtro = '%'
+    if request.method == 'POST':
+        filtro = filtro + request.form['buscar'].strip()+filtro
+
+    cur = connection.cursor()
+    query = 'SELECT * FROM proveedores where id_empresa = %s and proveedor like %s order by id_prov ASC limit 100'
+    params=[id_empresa, filtro]
+    cur.execute(query, params)
+    data = cur.fetchall()
+    cur.close()
+    connection.close()
+
+    if request.method == 'POST':
+        return render_template("search_proveedor.html", proveedores = data)
+    else:   
+        return render_template("proveedores.html", proveedores = data)
+ 
+
+@app.route('/edit_proveedor_ajax', methods = ['GET','POST'])
+def edit_proveedor_ajax():
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+
+    id_proveedor = request.form['id_proveedor']
+    ### rubros
+    id_empresa = session['id_empresa']
+    connection=conexion()
+
+    
+    ### articulos
+    cur = connection.cursor()
+    query = 'SELECT id_prov, proveedor, direccion, email, telefono, obs, id_empresa FROM proveedores where id_empresa = %s and id_prov = %s'
+    params=[id_empresa, id_proveedor] 
+    cur.execute(query, params)
+    data = cur.fetchall()
+    cur.close()
+    print(data)
+
+
+    connection.close()
+    jok = {"type": "ok", "proveedor": data}
+    return jsonify(jok) 
+    
+@app.route('/abm_proveedor_ajax', methods = ['GET', 'POST'])
+def abm_proveedor_ajax():
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+  
+    if request.method == 'POST':
+        id_proveedor = request.form['id_proveedor']
+        proveedor = request.form['proveedor']
+        direccion = request.form['direccion']
+        email = request.form['email']
+        proveedor = proveedor.upper()
+        telefono = request.form['telefono']
+        obs = request.form['obs']
+        print("provreedor: ", id_proveedor)
+        connection=conexion()
+        cur = connection.cursor()
+        cur.execute("""
+            UPDATE proveedores
+            SET proveedor = %s,
+                direccion = %s,
+                email = %s,
+                telefono = %s,
+                obs = %s
+            WHERE id_prov = %s
+        """, (proveedor, direccion, email, telefono, obs, id_proveedor))
+        flash('Registro modificado con Exito !')
+        connection.commit()
+        connection.close()
+         
+        jok = {"type": "ok", "status":200  }
+        return jsonify(jok) 
+ 
+
+
+#this route is for inserting data to database via html forms
+@app.route('/insert_proveedor', methods = ['POST'])
+def insert_proveedor():
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+
+    if request.method == 'POST':
+            try:
+                proveedor = request.form['proveedor']
+                direccion = request.form['direccion']
+                proveedor = proveedor.upper()
+                email = request.form['email']
+                telefono = request.form['telefono']
+                obs = request.form['obs']
+                id_empresa = session['id_empresa']
+
+                connection=conexion()
+                cur = connection.cursor()
+                query = 'insert into proveedores (proveedor, direccion, email, telefono, obs, id_empresa) VALUES (%s,%s,%s,%s,%s,%s)'
+                params = [proveedor, direccion, email, telefono, obs, id_empresa]
+                print(params)
+                cur.execute(query,params)
+                connection.commit()
+                connection.close()
+
+                flash('Proveedor Agregado Correctamente')
+            except:
+                flash('YA EXISTE, VERIFIQUE CÓDIGO OPERACION CANCELADA ')
+
+            return redirect(url_for('proveedores'))
+ 
+#this is our update route where we are going to update our articulos
+@app.route('/update_proveedor', methods = ['GET', 'POST'])
+def update_proveedor():
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+
+    if request.method == 'POST':
+        id_proveedor = request.form['id_proveedor']
+        proveedor = request.form['e_proveedor']
+        direccion = request.form['e_direccion']
+        proveedor = proveedor.upper()
+        email = request.form['e_email']
+        telefono = request.form['e_telefono']
+        obs = request.form['e_obs']
+    
+        connection=conexion()
+        cur = connection.cursor()
+        cur.execute("""
+            UPDATE proveedores
+            SET proveedor = %s,
+                direccion = %s,
+                email = %s,
+                telefono = %s,
+                obs = %s
+            WHERE id_prov = %s
+        """, (proveedor, direccion, email, telefono, obs, id_proveedor))
+        flash('Registro modificado con Exito !')
+        connection.commit()
+        connection.close()
+         
+        return redirect(url_for('proveedores'))
+
+ 
+
+
+@app.route('/delete_proveedor_ajax', methods = ['GET', 'POST'])
+def delete_proveedor():
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+    id = request.form['id_proveedor']
+    connection=conexion()
+    cur = connection.cursor()
+    cur.execute('DELETE FROM proveedores WHERE id_prov = {0}'.format(id))
+    connection.commit()
+    flash('Registro borrado !')
+    connection.close()
+
+    jok = {"type": "ok", "status":200  }
+    return jsonify(jok) 
+
+
+##/////////////////////////////////////////////////////////////////////////////////////////////////////////
+@app.route('/cargar_stock', methods = ['GET', 'POST'])
+def cargar_stock():
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+    
+    connection = conexion()
+    id_empresa = session.get('id_empresa')
+    ########## Proveedores
+    cur = connection.cursor()
+    query = 'select * from proveedores where id_empresa = %s order by proveedor'
+    params = [id_empresa]
+    cur.execute(query, params)
+    proveedores = cur.fetchall()
+    cur.close()
+       
+
+    ########## articulos
+    cur = connection.cursor()
+    query = '''
+        select id_art, codigo, barras, articulo, costo, DATE_FORMAT(fe_ult, '%%Y/%%m/%%d') as fe_ult, id_prov from articulos where id_empresa = %s order by articulo
+    '''
+    params = [id_empresa]
+    cur.execute(query, params)
+    articulos = cur.fetchall()
+    cur.close()
+   
+    return render_template('/cargar_stock.html', proveedores=proveedores, articulos=articulos)   
+
+@app.route('/cargar_stock2', methods = ['GET', 'POST'])
+def cargar_stock2():
+    if not session.get('id_empresa'):
+        return render_template('login.html')
+    
+    connection = conexion()
+    
+    id_empresa = session.get('id_empresa')
+    barras = request.form['barras'].strip()
+   
+    id_art = request.form['id_art']
+
+    print("barras: ", barras)
+    print("id_art :", id_art)
+
+    ########## Proveedores
+    cur = connection.cursor()
+    query = 'select * from proveedores where id_empresa = %s order by proveedor'
+    params = [id_empresa]
+    cur.execute(query, params)
+    proveedores = cur.fetchall()
+    cur.close()
+
+    ########## articulo solo
+    cur = connection.cursor()
+    if barras != "0":
+        query = '''
+            select id_art, codigo, barras, articulo, costo, DATE_FORMAT(fe_ult, '%%Y/%%m/%%d') as fe_ult, id_prov from articulos where id_empresa = %s and barras = %s order by articulo
+            '''
+        params = [id_empresa, barras]
+    if id_art != "":
+        query = '''
+                select id_art, codigo, barras, articulo, costo, DATE_FORMAT(fe_ult, '%%Y/%%m/%%d') as fe_ult, id_prov from articulos where id_empresa = %s and id_art = %s order by articulo
+                '''
+        params = [id_empresa, id_art] 
+           
+    cur.execute(query, params)
+    articulo = cur.fetchall()
+    cur.close()
+    print("articulo ",articulo)
+    
+    ########## articulos
+    cur = connection.cursor()
+    query = '''
+            select id_art, codigo, barras, articulo, costo, DATE_FORMAT(fe_ult, '%%Y/%%m/%%d') as fe_ult, id_prov from articulos where id_empresa = %s order by articulo
+            '''
+    params = [id_empresa]
+    cur.execute(query,params)
+    articulos = cur.fetchall()
+    cur.close()
+
+    jok = {"type": "ok", "articulos": articulos, "articulo": articulo, "proveedores": proveedores}
+    return jsonify(jok)   
+
+@app.route('/mod_stock', methods = ['GET', 'POST'])
+def mod_stock():
+   
+        nro_comp = request.form['nro_comp']
+        id_art = request.form['id_art']
+        id_prov = request.form['id_prov']
+        importe = request.form['importe']
+        fecha = request.form['fecha']
+        costo = request.form['costo']
+        cantidad = request.form['cantidad']
+        id_empresa = session['id_empresa']
+        costo_ant = request.form['costo_ant']
+        fecha_ant = request.form['fecha_ant']
+   
+
+        print("fecha_ant: ",fecha_ant)
+        jok = {"type": "ok"}
+        
+        con = conexion()
+
+        ##### VERIFICO PROVEEDOR
+        cur = con.cursor()
+        query = "select max(nro_comp) as nro_comp, max(id_prov) as id_prov from fact_prov where nro_comp = %s group  by nro_comp, id_prov, id_empresa   "
+        params = [nro_comp]
+        cur.execute(query,params)
+        prov = cur.fetchall()
+        cur.close()
+        print("prov: ",prov)
+        print("id_prov:",id_prov)
+        for row in prov:
+            if row[1] != int(id_prov) :
+                print("distinto")
+                jok = {"type": "404"}
+                return jsonify(jok) 
+
+        ##### GUARDO EN FACT_PROV
+        cur = con.cursor()
+        query = "insert into fact_prov (nro_comp, id_prov, importe, fecha, id_art, costo, costo_ant, fecha_ant, id_empresa) values(%s,%s,%s,%s,%s,%s,%s,%s,%s) "
+        params = [nro_comp, id_prov, importe, fecha, id_art, costo, costo_ant, fecha_ant, id_empresa]
+        cur.execute(query,params)
+        con.commit()
+        cur.close()
+
+        ##### GUARDO COSTO Y CANTIDAD EN ARTICULOS
+        cur = con.cursor()
+        query = "update articulos set stock = stock + %s, costo = %s, fe_ult = %s where id_art = %s"
+        params = [cantidad, costo, fecha, id_art]
+        cur.execute(query,params)
+        con.commit()
+        cur.close()
+
+        print("paso bien")
+        jok = {"type": "ok"}
+ 
+        return jsonify(jok) 
+
+
+@app.route('/ver_comp_prov/<fecha>', methods = ['GET', 'POST'] )
+def ver_comp_prov(fecha):
+    id_empresa = session.get('id_empresa')
+   
+    #if request.method == 'POST':
+    #    fecha = request.form['fecha']
+    #    print("post: ",fecha)
+    #else: 
+    #    fecha = date.today()
+   
+    if not fecha: 
+        fecha = date.today()
+
+    print(fecha)
+   
+    con = conexion()
+    cur = con.cursor()
+    query = '''  
+            select  DATE_FORMAT(fact_prov.fecha, '%%d/%%m/%%Y') as fecha, fact_prov.nro_comp, fact_prov.Importe, proveedores.proveedor , 
+            articulos.barras, articulos.articulo, fact_prov.costo_ant, fact_prov.fecha_ant, fact_prov.costo, 
+            DATE_FORMAT(fact_prov.fecha_ant, '%%d/%%m/%%Y') as fecha_ant 
+            from fact_prov
+            left join proveedores on proveedores.id_prov = fact_prov.id_prov 
+            left join articulos on articulos.id_art = fact_prov.id_art
+            where fecha = %s and fact_prov.id_empresa = %s order by proveedores.proveedor, fecha
+            '''
+    params = [fecha,id_empresa]
+    cur.execute(query, params)
+    data = cur.fetchall()
+    cur.close()
+    print("Articulos: ",data)
+    
+    cur = con.cursor()
+    query = ''' 
+                select proveedores.proveedor,DATE_FORMAT(fact_prov.fecha, '%%d/%%m/%%Y') as fecha, fact_prov.nro_comp, fact_prov.Importe 
+                from fact_prov 
+                left join proveedores on proveedores.id_prov = fact_prov.id_prov 
+                where fact_prov.fecha = %s and fact_prov.id_empresa = %s
+                group by proveedores.proveedor order by proveedor
+    
+            '''
+    params=[fecha,id_empresa]
+    cur.execute(query, params)        
+    proveedores = cur.fetchall()
+    cur.close()
+    con.close()
+    print("Proveedores : ", proveedores)
+    return render_template('ver_comp_prov.html', data=data, proveedores=proveedores)
 
 if __name__ == "__main__":
    
     # pongo en server en modo desarrollo
-    app.run('0.0.0.0',debug=True)
+    app.run('0.0.0.0',debug=True,port=5002)
     
     # pongo en server en modo producción
     #from waitress import serve

@@ -1,0 +1,65 @@
+{% for row in marcas %}
+    <tr>
+        <td>{{row.0}}</td> <!-- ID MARCA -->
+        <td><a href="/update_marca/{{row.0}}" data-toggle="modal" data-target="#modaledit{{row.0}}"> {{row.1.upper()}} </a> </td>
+        <td>
+            <button class="btn btn-default btn-xs" data-toggle="modal" data-target="#borrar{{row.0}}"><img src="/static/images/eliminar.png" alt="Borra" width="24" height="24"></button>
+        </td>
+    </tr>
+
+    
+    
+    <div id="borrar{{row.0}}" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Borrar Marca?</h4>
+                </div>
+                <div class="modal-body">
+                    <form name="borra" action="/delete_marca/{{row.0}}" method="POST">
+                        <div class="form-group">
+                            <button class="btn btn-primary" type="submit">Borrar</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Marca-->
+    <div id="modaledit{{row.0}}" class="modal fade" role="dialog">
+
+        <div class="modal-dialog">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h4 class="modal-title">Editando Datos</h4>
+                </div>
+
+
+                <div class="modal-body">
+                    <form name="editmarca" action="{{url_for('update_marca')}}" method="POST">
+                        <div class="form-group">
+                            <input type="hidden" name="id_marca" value="{{row.0}}">
+                        </div>
+                        <div class="form-group">
+                            <label>Marca:</label>
+                            <input type="text" class="form-control" name="marca" value="{{row.1}}" required>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-primary" type="submit">Guardar</button>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Salir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+{% endfor %}

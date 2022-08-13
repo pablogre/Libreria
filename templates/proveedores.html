@@ -1,0 +1,282 @@
+{% extends "layout.html" %} {% include "header.html" %} {% block title %} Proveedores {% endblock %} {% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col md-12">
+            <div class="jumbotron p-3">
+                <input type="text" id="buscar" placeholder="Buscar" onkeyup="search(this.value)" size="8"> <button type="button" class="btn btn-primary">Buscar</button> <button type="button" class="btn btn-success float-right" data-toggle="modal" data-target="#mymodal">Nuevo</button>                {% with messages = get_flashed_messages() %} {% if messages %} {% for message in messages %} {% if 'CANCELADA' in message %}
+                <!-- SI ESTA LA PALABRA EXISTE EN EL MENSAJE MUESTO LA CLASE WARNING SI NO SUCCESS-->
+                <div class="alert alert-danger alert-dismissable" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="close">
+                                    <span aria-hidden="true">x</span>
+                                </button> {{message}}
+                </div>
+                {% else %}
+                <div class="alert alert-success alert-dismissable" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="close">
+                                    <span aria-hidden="true">x</span>
+                                </button> {{message}}
+                </div>
+                {% endif %} {% endfor %} {% endif %} {% endwith %}
+
+                <table class="table table-hover table-active table-sm">
+                    <tr>
+                        <th>Proveedor</th>
+                        <th>Telefono</th>
+                        <th>Acción</th>
+                    </tr>
+
+                    <tbody id="search_proveedor">
+
+                        {% for row in proveedores %}
+
+                        <tr>
+                            <td> <button style="color:rgb(0, 140, 255)" type="button" class="btn btn-default btn-xs" onclick="editar( {{row.0}} )">{{row.1}}</button> </td>
+                            <td>{{row.4}}</td>
+                            <td>
+                                <!--  <a href="/update_art/{{row.0}}" class="btn btn-default btn-xs" data-toggle="modal" data-target="#modaledit{{row.0}}"> <img src="/static/images/edit.png" alt="Editar" width="24" height="24"> </a>  -->
+                                <!-- <a href="/delete_cli/{{row.0}}" class="btn btn-default btn-xs" onclick="return confirm('Borra el Registro ?')"><img src="/static/images/eliminar.png" alt="Borra" width="24" height="24"></a> -->
+                                <!-- <button class="btn btn-default btn-xs" data-toggle="modal" data-target="#borrar{{row.0}}"><img src="/static/images/eliminar.png" alt="Borra" width="24" height="24"></button> -->
+                                <button  type="button" class="btn btn-default btn-xs" onclick="borrar( {{row.0}} )"><img src="/static/images/eliminar.png" alt="Borra" width="24" height="24"></button> 
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <!-- Modal Add  -->
+            <div id="mymodal" class="modal fade" role="dialog">
+
+                <div class="modal-dialog">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+                            <h4 class="modal-title">Nuevo Proveedor</h4>
+                        </div>
+
+                        <div class="modal-body">
+                            <form action="{{url_for('insert_proveedor')}}" method="POST">
+                                <input type="hidden" name="parametro" value="0">
+                                <div class="form-group">
+                                    <label>Proveedor:</label>
+                                    <input type="text" class="form-control" name="proveedor">
+                                </div>
+                                <div class="form-group">
+                                    <label>Direccion:</label>
+                                    <input type="text" class="form-control" name="direccion">
+                                </div>
+                                <div class="form-group">
+                                    <label>Email:</label>
+                                    <input type="email" class="form-control" name="email">
+                                </div>
+                                <div class="form-group">
+                                    <label>Telefono:</label>
+                                    <input type="number" class="form-control" name="telefono">
+                                </div>
+                                <div class="form-group">
+                                    <label>OBS:</label>
+                                    <textarea class="form-control" name="obs"></textarea> <!--<input type="text" class="form-control" name="obs">-->
+                                </div>
+                                <div class="form-group">
+                                    <button class="btn btn-primary" type="submit">Añadir Proveedor</button>
+                                    <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Salir</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Salir</button>
+                        </div> -->
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="borrar" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Borrar Proveedor?</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <input type="hidden" id="id_proveedor">
+                    <button class="btn btn-primary" onclick="borrar2()" type="submit">Borrar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Proveedor-->
+<div id="modalEdit" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Editando Datos</h4>
+            </div>
+
+            <div class="modal-body">
+                <!-- <form name="editcli" action="{{url_for('update_art')}}" method="POST"> -->
+                    <input type="hidden" id="e_id_proveedor" name="e_id_proveedor">
+                    <div class="form-group">
+                        <label>Proveedor:</label>
+                        <input type="text" class="form-control" name="e_proveedor" id="e_proveedor">
+                    </div>
+                    <div class="form-group">
+                        <label>Direccion:</label>
+                        <input type="text" class="form-control" name="e_direccion" id="e_direccion">
+                    </div>
+                    <div class="form-group">
+                        <label>Email:</label>
+                        <input type="email" class="form-control" name="e_email" id="e_email">
+                    </div>
+                    <div class="form-group">
+                        <label>Telefono:</label>
+                        <input type="number" class="form-control" name="e_telefono" id="e_telefono">
+                    </div>
+                    <div class="form-group">
+                        <label>OBS:</label>
+                        <textarea class="form-control"class="form-control" name="e_obs" id="e_obs"></textarea> <!--<input type="text" class="form-control" name="e_obs" id="e_obs">-->
+                    </div>
+
+                    <div class="form-group">
+                        <button class="btn btn-primary guardar" type="submit">Guardar</button>
+                        <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Salir</button>
+                    </div>
+                <!-- </form> -->
+
+            </div>
+            <!-- <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Salir</button>
+            </div> -->
+        </div>
+    </div>
+</div>
+
+
+
+<!-- <script type="text/javascript">
+    function search(v) {
+        $.post('/articulos', {
+            buscar: v
+        }, function(data) {
+            $('#search_art').html(data);
+        });
+    }
+</script> -->
+
+{% endblock %}
+
+{% block script %}
+
+
+<script type="text/javascript">
+
+function search(v) {
+        $.post('/proveedores', {
+            buscar: v
+        }, function(data) {
+            $('#search_proveedor').html(data);
+        });
+    }
+
+
+function borrar(id_proveedor) {
+    let datos = { 'id_proveedor': id_proveedor}
+        $("#id_proveedor").val(id_proveedor)
+        $('#borrar').modal("show")
+    }
+   
+
+function borrar2() {
+    let datos = { 'id_proveedor': $("#id_proveedor").val()}
+    $.ajax({
+        url: "../delete_proveedor_ajax",
+        type: "POST",
+        data: datos,
+       
+        success: function(data) {
+            console.log(data)
+            if (data.type == 'ok') {
+                //$('#borrar').modal("hide")
+                location.reload()
+            }
+        },
+        error: function() {
+            alert('ERROR,  CAGASTE FUEGO')
+        }
+    });
+}
+
+$('.guardar').on('click', function() {
+    
+    let datos = {
+        id_proveedor: $('#e_id_proveedor').val(),
+        proveedor: $('#e_proveedor').val(),
+        direccion: $('#e_direccion').val(),
+        email: $('#e_email').val(),
+        telefono: $('#e_telefono').val(),
+        obs: $('#e_obs').val(),
+    }
+    console.log(datos)
+    $.ajax({
+        url: "../abm_proveedor_ajax",
+        type: "POST",
+        data: datos,
+        success: function(data) {
+            console.log('Data: '+data)
+            if (data.type == 'ok') {
+                location.reload()
+            }
+        },
+        error: function() {
+            alert('ERROR,  CAGASTE FUEGO')
+        }
+    });
+})
+
+
+function editar(id_proveedor) {
+    let datos = { 'id_proveedor': id_proveedor}
+    $.ajax({
+        url: "../edit_proveedor_ajax",
+        type: "POST",
+        data: datos,
+       
+        success: function(data) {
+            console.log(data)
+            if (data.type == 'ok') {
+                //location.reload()
+                let proveedores = data.proveedor[0];
+
+                titulo =  'Editando Proveedor ' +' Nº: '+ proveedores[0]
+                $(".modal-title").text(titulo);
+                $("#e_id_proveedor").val(proveedores[0]);
+                $("#e_proveedor").val(proveedores[1]);
+                $("#e_direccion").val(proveedores[2]);
+                $("#e_email").val(proveedores[3]);
+                $("#e_telefono").val(proveedores[4]);
+                $("#e_obs").val(proveedores[5]);
+
+                $('#modalEdit').modal("show")
+            }
+        },
+        error: function() {
+            alert('ERROR,  CAGASTE FUEGO')
+        }
+    });
+}
+
+</script>
+{% endblock %}    
+
