@@ -2011,7 +2011,7 @@ def mod_stock():
         id_empresa = session['id_empresa']
         costo_ant = request.form['costo_ant']
         fecha_ant = request.form['fecha_ant']
-   
+       
 
         print("fecha_ant: ",fecha_ant)
         jok = {"type": "ok"}
@@ -2035,8 +2035,8 @@ def mod_stock():
 
         ##### GUARDO EN FACT_PROV
         cur = con.cursor()
-        query = "insert into fact_prov (nro_comp, id_prov, importe, fecha, id_art, costo, costo_ant, fecha_ant, id_empresa) values(%s,%s,%s,%s,%s,%s,%s,%s,%s) "
-        params = [nro_comp, id_prov, importe, fecha, id_art, costo, costo_ant, fecha_ant, id_empresa]
+        query = "insert into fact_prov (nro_comp, id_prov, importe, fecha, id_art, costo, costo_ant, fecha_ant, cantidad, id_empresa) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) "
+        params = [nro_comp, id_prov, importe, fecha, id_art, costo, costo_ant, fecha_ant, cantidad, id_empresa]
         cur.execute(query,params)
         con.commit()
         cur.close()
@@ -2075,7 +2075,7 @@ def ver_comp_prov(fecha):
     query = '''  
             select  DATE_FORMAT(fact_prov.fecha, '%%d/%%m/%%Y') as fecha, fact_prov.nro_comp, fact_prov.Importe, proveedores.proveedor , 
             articulos.barras, articulos.articulo, fact_prov.costo_ant, fact_prov.fecha_ant, fact_prov.costo, 
-            DATE_FORMAT(fact_prov.fecha_ant, '%%d/%%m/%%Y') as fecha_ant 
+            DATE_FORMAT(fact_prov.fecha_ant, '%%d/%%m/%%Y') as fecha_ant, fact_prov.cantidad 
             from fact_prov
             left join proveedores on proveedores.id_prov = fact_prov.id_prov 
             left join articulos on articulos.id_art = fact_prov.id_art
@@ -2089,7 +2089,7 @@ def ver_comp_prov(fecha):
     
     cur = con.cursor()
     query = ''' 
-                select proveedores.proveedor,DATE_FORMAT(fact_prov.fecha, '%%d/%%m/%%Y') as fecha, fact_prov.nro_comp, fact_prov.Importe 
+                select proveedores.proveedor,DATE_FORMAT(fact_prov.fecha, '%%d/%%m/%%Y') as fecha, fact_prov.nro_comp, fact_prov.Importe, fact_prov.id_prov 
                 from fact_prov 
                 left join proveedores on proveedores.id_prov = fact_prov.id_prov 
                 where fact_prov.fecha = %s and fact_prov.id_empresa = %s
@@ -2103,6 +2103,59 @@ def ver_comp_prov(fecha):
     con.close()
     print("Proveedores : ", proveedores)
     return render_template('ver_comp_prov.html', data=data, proveedores=proveedores)
+
+
+@app.route('/del_com_prov_ajax', methods = ['GET', 'POST'] )
+def del_com_prov_ajax():
+        nro_comp = request.form['nro_comp']
+        fecha = request.form['fecha']
+        prov = request.form['prov']
+        id_prov = request.form['id_prov']
+        dd = fecha[:2]
+        mm = fecha[3:5]
+        yyyy = fecha[6:]
+        fecha = yyyy +'-'+mm+'-'+dd
+
+        con = conexion()
+
+        cur =con.cursor()
+        query = "select * from fact_prov where nro_comp = %s and fecha = %s and id_prov = %s"
+        params = [nro_comp, fecha, id_prov]
+        cur.execute(query,params)
+        data = cur.fetchall()
+        cur.close()
+        
+        print("Data:",data)
+        #### descuento la mercaderia cargada
+        for row in data:
+            cantidad = row[10]
+            fecha_ant = row[9]
+            id_art = row[6]
+            print("cantidad: ",cantidad, "  fecha_ant: ", fecha_ant, "id_art : ", id_art)
+            con = conexion()
+            cur =con.cursor()
+            query = "update articulos set stock = stock - %s, fe_ult = %s where id_art = %s"
+            params = [cantidad, fecha_ant, id_art]
+            cur.execute(query,params)
+            data = cur.fetchall()
+            cur.close()
+
+        #### Borro de fact_prov
+        cur =con.cursor()
+        query = "delete from fact_prov where nro_comp = %s and fecha = %s and id_prov = %s"
+        params = [nro_comp, fecha, id_prov]
+        cur.execute(query,params)
+        con.commit()
+        cur.close()
+        con.close()
+
+
+        jok = {"type": "ok"}
+        return jsonify(jok) 
+      
+
+
+
 
 if __name__ == "__main__":
    

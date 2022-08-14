@@ -13,7 +13,10 @@
                         <div class="col md-8"></div>
                     </div>
                     <br>
+                </div>  
+            </div>     
                 {% for row in proveedores %}
+                <div class="jumbotron p-3">
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-grup">
@@ -41,21 +44,21 @@
                         </div>     
                         <div class="col-md-1">
                             <div class="form-grup">
-                                <button  style="margin-top: 35px;" type="button" class="btn btn-default btn-xs" onclick="borrar( {{row.2}} , {{row.1}})"><img src="/static/images/eliminar.png" alt="Borra" width="24" height="24"></button> 
+                                <button  style="margin-top: 35px;" type="button" class="btn btn-default btn-xs" onclick="borrar({{row.2}} , '{{row.1}}', '{{row.0}}', '{{row.4}}')"><img src="/static/images/eliminar.png" alt="Borra" width="24" height="24"></button> 
                                 
                             </div>
                         </div>                           
                     </div>
 
                     <br>
-
+                   
                     <div class="row">
                         <div class="col-md-2">
                             <div class="form-grup">
                                 <label for="barras">Cód. de Barras:</label>           
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="form-grup">
                                 <label for="art">Artículo:</label>          
                             </div>
@@ -75,6 +78,11 @@
                                 <label for="costo">Costo:</label>       
                             </div>
                         </div>
+                        <div class="col-md-1">
+                            <div class="form-grup">
+                                <label for="cantidad">Cant.:</label>       
+                            </div>
+                        </div>
                         
                     </div>
                 
@@ -86,7 +94,7 @@
                                         <input class="form-control" id="barras" type="text" value = "{{art.4}}" disabled>     
                                     </div>
                                 </div>    
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-grup">                            
                                         <input class="form-control" id="art" type="text" value = "{{art.5}}" disabled>     
                                     </div>
@@ -105,7 +113,12 @@
                                     <div class="form-grup">
                                         <input class="form-control" id="costo" type="text" value = "{{art.8}}" disabled>     
                                     </div>
-                                </div>     
+                                </div>  
+                                <div class="col-md-1">
+                                    <div class="form-grup">
+                                        <input class="form-control" id="cantidad" type="text" value = "{{art.10}}" disabled>     
+                                    </div>
+                                </div>        
                                             
                             </div> 
                        
@@ -113,6 +126,7 @@
                           
                     {% endfor %}  
                             <br>
+                </div>        
                 {% endfor %}   
             </div>
         </div>
@@ -129,12 +143,21 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
+                    <label for="fechab">Fecha Comprobamte.</label>
+                    <input class="form-control" type="text" id="fechab" disabled>
+                </div>    
+                <div class="form-group">
                     <label for="nro_comp">Nro. de Comprobamte.</label>
                     <input class="form-control" type="text" id="nro_comp" disabled>
-                    <input class="form-control" type="text" id="fecha" disabled>
-                    <br>
-                    <button class="btn btn-primary" onclick="borrar2()" type="submit">borrar</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                </div>
+                <div class="form-group">
+                    <label for="provb">Proveedor.</label>
+                    <input class="form-control" type="text" id="provb" disabled>
+                    <input type="text" id="id_provb" hidden>
+                </div>
+                <br>
+                <button class="btn btn-danger" onclick="borrar2()" type="submit">borrar</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                 </div>
             </div>
         </div>
@@ -154,23 +177,34 @@ function ver(){
 }
 
 
-function borrar(nro_comp , fecha) {
-    console.log("fecha "+ fecha)
+function borrar(nro_comp , fecha, provb, id_provb) {
+    console.log(provb)
+    let dd = fecha.substr(0,2)
+    let mm = fecha.substr(3,2)
+    let yyyy = fecha.substr(6,4)
+    console.log(yyyy+'-'+mm+'-'+dd)
+    let fechab = dd+'-'+mm+'-'+yyyy
     let datos = { 
                   'nro_comp': nro_comp,
-                  'fecha': fecha
+                  'fechab': fechab,
+                  'provb': provb,
+                  'id_provb': id_provb 
                 }
 
         $("#nro_comp").val(nro_comp)
-        $("#fecha").val(fecha)
+        $("#fechab").val(fechab)
+        $("#provb").val(provb)
+        $("#id_provb").val(id_provb)
         $('#borrar').modal("show")
     }
    
 
 function borrar2() {
     let datos = { 
-                    'nro_comp': $("#nro_com").val(),
-                    'fecha': ("#fecha").val()
+                    'nro_comp': $("#nro_comp").val(),
+                    'fecha': $("#fechab").val(),
+                    'prov': $('#provb').val(),
+                    'id_prov': $('#id_provb').val()
                 }
     $.ajax({
         url: "../del_com_prov_ajax",
@@ -178,11 +212,18 @@ function borrar2() {
         data: datos,
        
         success: function(data) {
-            console.log(data)
-            if (data.type == 'ok') {
-                //$('#borrar').modal("hide")
-                location.reload()
+            if(data.type == "ok"){
+                let fecha = $('#fechab').val()
+                let dd = fecha.substr(0,2)
+                let mm = fecha.substr(3,2)
+                let yyyy = fecha.substr(6,4)
+                console.log(yyyy+'-'+mm+'-'+dd)
+                let fechab = yyyy+'-'+mm+'-'+dd
+
+                location.href = "/ver_comp_prov/"+fechab
+    
             }
+            
         },
         error: function() {
             alert('ERROR,  VERIFIQUE')
@@ -190,7 +231,12 @@ function borrar2() {
     });
 }
 
-
+function fecha(fecha){
+    let dd = fecha.substr(0,2)
+    let mm = fecha.substr(3,2)
+    let yyyy = fecha.substr(6,4)
+    return dd+'-'+mm+'-'+yyyy
+} 
 
 function listar(){
     let datos = {
