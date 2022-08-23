@@ -100,6 +100,14 @@
 {%block script%}
 
 <script type="text/javascript">
+    
+$(document).ready(function(){
+    $("#barras").keydown(function(e){
+        if(e.which==17 || e.which==74 || e.keyCode == 13){
+            e.preventDefault();
+        }
+    })
+});
 
 function limpiar(){
     $('#id_art').val("")
@@ -135,6 +143,8 @@ function search(){
         'id_art': $("#id_art").val()
     }
     console.log(datos)
+    console.log("barras: "+ $("#barras").val())
+    console.log(typeof($("#barras").val()))
     $.ajax({
         url: "../cargar_stock2",
         type: "POST",

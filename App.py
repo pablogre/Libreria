@@ -2043,8 +2043,8 @@ def mod_stock():
 
         ##### GUARDO COSTO Y CANTIDAD EN ARTICULOS
         cur = con.cursor()
-        query = "update articulos set stock = stock + %s, costo = %s, fe_ult = %s where id_art = %s"
-        params = [cantidad, costo, fecha, id_art]
+        query = "update articulos set stock = stock + %s, costo = %s,  precio1 = %s * (1+(margen1/100)), precio2 = %s * (1+(margen2/100)), fe_ult = %s where id_art = %s"
+        params = [cantidad, costo, costo, costo, fecha, id_art]
         cur.execute(query,params)
         con.commit()
         cur.close()
@@ -2079,7 +2079,7 @@ def ver_comp_prov(fecha):
             from fact_prov
             left join proveedores on proveedores.id_prov = fact_prov.id_prov 
             left join articulos on articulos.id_art = fact_prov.id_art
-            where fecha = %s and fact_prov.id_empresa = %s order by proveedores.proveedor, fecha
+            where fecha = %s and fact_prov.id_empresa = %s group by proveedores.proveedor, fecha
             '''
     params = [fecha,id_empresa]
     cur.execute(query, params)
@@ -2093,7 +2093,7 @@ def ver_comp_prov(fecha):
                 from fact_prov 
                 left join proveedores on proveedores.id_prov = fact_prov.id_prov 
                 where fact_prov.fecha = %s and fact_prov.id_empresa = %s
-                group by proveedores.proveedor order by proveedor
+                group by proveedores.proveedor, fact_prov.nro_comp  order by proveedor
     
             '''
     params=[fecha,id_empresa]
