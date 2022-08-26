@@ -690,4 +690,7 @@ def gen_pdf_int(id):
 
     return lista
 
+
+
+
 #gen_pdf_int(1)

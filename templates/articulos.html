@@ -124,7 +124,7 @@
 
                                 <div class="form-group">
                                     <label>Margen 1:</label>
-                                    <input type="number" step="1" min="0" class="form-control" id="margen1" name="margen1" onblur="precio1(this)">
+                                    <input type="number" step="1" min="0" class="form-control" id="margen1" name="margen1" onblur="precio1_a(this)">
                                 </div>
 
                                 <div class="form-group">
@@ -134,7 +134,7 @@
 
                                 <div class="form-group">
                                     <label>Margen 2:</label>
-                                    <input type="number" step="1" min="0" class="form-control" id="margen2" name="margen2">
+                                    <input type="number" step="1" min="0" class="form-control" id="margen2" name="margen2" onblur="precio2_a(this)">
                                 </div>
 
                                 <div class="form-group">
@@ -372,6 +372,25 @@ function search(v) {
         });
     }
 
+
+function precio1_a(x){
+    if(x.value > 0){
+        let costo = $('#costo').val()
+        let margen1 = x.value
+        let precio1 = costo * ( 1 + margen1 /100 )
+        $("#precio1").val(precio1.toFixed())  
+    }
+}
+
+function precio2_a(x){
+    if(x.value > 0){
+        let costo = $('#costo').val()
+        let margen2 = x.value
+        let precio2 = costo * ( 1 + margen2 /100 )
+        $("#precio2").val(precio2.toFixed())  
+    }
+}
+
 function precio1(x){
     if(x.value > 0){
         let costo = $('#e_costo').val()
@@ -458,7 +477,7 @@ $('.guardar_alta').on('click', function() {
     let datos = {
         id_art: $('#id_art').val(),
         codigo: $('#codigo').val(),
-        barras: $('#barras').val(),
+    
         articulo: $('#articulo').val(),
         id_rubro: $('#id_rubro').val(),
         id_marca: $('#id_marca').val(),

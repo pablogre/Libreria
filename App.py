@@ -61,6 +61,12 @@ def val_log():
             flash('Sus Datos No Estan Registrados')    
             return render_template('login.html')
 
+
+@app.route('/cancelar', methods = ['GET','POST'])            
+def cancelar():
+     return render_template('factufacil.html')
+
+
 @app.route('/menu', methods = ['GET','POST'])
 def menu():
      print('<h1> MENU </h1>')
@@ -1154,8 +1160,8 @@ def val_mp(t_mp, t_fa, id_cliente):
             fecha = date.today()
             tipo_comp = request.form['ti_comp']
             obs_comp = request.form['obs_comp']
-            #Si es interno
-            if tipo_comp == "4":
+            #Si es interno o Remito
+            if tipo_comp == "4" or  tipo_comp == "5":
                 puerto = 1
                 #Saco el ultimo interno 
                 connection=conexion()
@@ -1175,7 +1181,7 @@ def val_mp(t_mp, t_fa, id_cliente):
                 # Cuando grabas un INTERNO Tenes poner en FACTURAS.tipo_comp va en cero y FACTURAS.id_tipo_comp=4
                 cur = connection.cursor()
                 query = "insert into facturas (id_cliente, fecha, total, puerto, numero, id_empresa, tipo_comp, letra, dni, cliente, id_tipo_comp) values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                params = [id_cliente, fecha, total , puerto, numero, id_empresa, 0, letra, dni, cliente, 4]
+                params = [id_cliente, fecha, total , puerto, numero, id_empresa, 0, letra, dni, cliente, tipo_comp]
                 cur.execute(query, params)
                 connection.commit()
                 
@@ -1652,7 +1658,7 @@ def delete_id_marca(id):
   
     return redirect(url_for('marcas'))
 
-
+ 
 @app.route('/nuevo_precio', methods = ['GET','POST'])
 def nuevo_precio():
     if not session.get('id_empresa'):
@@ -1709,6 +1715,7 @@ def update_precio():
         print("id_rubro:", id_rubro)
         print("id_marca:", id_marca)
         print("id_prov:", id_proveedor)
+        
         if id_rubro != '0':
             condi1 =  " id_rubro = %s"
             param.append(id_rubro)
@@ -1716,11 +1723,16 @@ def update_precio():
             if len(condi1) > 0:
                 condi2 =  " and id_marca = %s"
                 param.append(id_marca)
+            else:
+                condi2 =  " id_marca = %s"
+                param.append(id_marca)    
         if id_proveedor != '0':
             if len(condi2) > 0:
                 condi3 =  " and id_prov = %s"
                 param.append(id_proveedor)    
-    
+            else:
+                condi3 =  " id_prov = %s"
+                param.append(id_proveedor)    
          
         print("condi:",condi1 + condi2 + condi3)  
         print('param:',param) 
@@ -2153,6 +2165,33 @@ def del_com_prov_ajax():
         jok = {"type": "ok"}
         return jsonify(jok) 
       
+
+@app.route('/gen_remito/<id>', methods = ['GET', 'POST'] )
+def gen_remito(id):
+    # ###################################
+    # TRAIGO LOS DATOS
+    # Connection
+    conn = conexion()
+    cur = conn.cursor()
+    data=()
+    query = '''
+            select empresas.*, facturas.*, factura_items.*, clientes.* , articulos.codigo
+            from facturas
+            left join empresas on empresas.id_empresa = facturas.id_empresa 
+            left join factura_items on factura_items.id_factura = facturas.id_factura 
+            left join clientes on facturas.id_cliente = clientes.id
+            left join articulos on articulos.id_art = factura_items.id_art 
+            where facturas.id_factura = %s
+            '''
+    params = [id]
+    cur.execute(query,params)
+    data = cur.fetchall()
+    cur.close
+    conn.close()
+    print(data)
+    print(data[0][1])
+    return render_template('remito.html', data=data)
+
 
 
 

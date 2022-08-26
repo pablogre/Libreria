@@ -46,7 +46,11 @@
         
         <div class="form-group">
             <button class="btn btn-primary guardar" type="submit" onclick="nuevoPrecio()">Guardar</button>
+            <button  id="cancelar" class="btn btn-danger float-right" onclick="cancelar()">Cancelar</button>
         </div> 
+       
+       
+         
     </div>
 </div>
 {% endblock %}
@@ -110,6 +114,12 @@
             });
         
     }
+
+
+    
+function cancelar(){
+    location.href = "http://localhost:5002/cancelar";
+}
 
            
  </script>

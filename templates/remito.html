@@ -1,0 +1,38 @@
+{% extends "layout.html" %}  {% block title %} REMITOS {% endblock %} {% block body %}
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            <div style="padding-left: 20px; border: solid 1px; border-radius: 5px ;">
+                <h5>REMITO Nº: {{data.0.22}} - {{data.0.23}} </h5>
+            </div>
+            <div style="padding-left: 20px; border: solid 1px; border-radius: 5px ;">
+                <h6 style="padding-top: 10px ;">Cliente: {{data.0.62}}</h6> 
+                <h6>Dir: {{data.0.63}} ----  Tel: {{data.0.64}}</h6> 
+                <p>_______________________________________________________________________________</p>
+                <table>
+
+                    <tr>
+                        <th style="padding-right: 10px;">Cód. Art.</th>
+                        <th style="padding-right: 10px;">Artículo</th>
+                        <th style="padding-right: 10px;">Cantidad</th>
+                        <th style="padding-right: 10px;">Precio</th>
+                    </tr>   
+                   
+                    {% for row in data %}
+                        <tr style="font-size: 12px; font-family: Arial, Helvetica, sans-serif; ">
+                            <td style="padding-right: 10px;"> {{data.0.54}} </td>
+                            <td style="padding-right: 10px;"> {{data.0.55}} </td>
+                            <td style="padding-right: 10px;"> {{data.0.59}} </td>
+                            <td style="padding-right: 10px;"> {{data.0.57}} </td>
+                        </tr> 
+                    {%endfor%}
+                  
+                
+                </table>
+            </div>   
+        </div>
+    </div>
+
+</div>
+{% endblock %}
