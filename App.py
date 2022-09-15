@@ -648,7 +648,8 @@ def mod_arti_ajax(parametro):
                             fe_ult = %s
                         WHERE id_art = %s
                     """, (codigo, barras, articulo, id_rubro, id_marca, id_prov, costo, margen1, precio1, margen2, precio2, stock, st_min, iva, fe_ult, id_art))
-            
+                
+                jok = {"type": "ok", "status":200  } 
                 flash('Registro Modificado con Exito !')
                 connection.commit()
                 connection.close()    
@@ -664,11 +665,11 @@ def mod_arti_ajax(parametro):
                 cur.execute(query,params) 
                 flash('Artículo Agregado Correctamente')
                 connection.commit()
-                connection.close()    
+                connection.close()   
+                jok = {"type": "ok", "status":200  } 
             except:
-                flash('YA EXISTE, VERIFIQUE CÓDIGO OPERACION CANCELADA ')  
-         
-        jok = {"type": "ok", "status":200  }
+                flash('YA EXISTE, VERIFIQUE CÓDIGO OPERACION CANCELADA ')   
+        
         return jsonify(jok)  
  
 
@@ -1209,6 +1210,14 @@ def val_mp(t_mp, t_fa, id_cliente):
                     cur = connection.cursor()
                     query = "insert into factura_items (id_factura, id_art, articulo, costo, precio, iva, cantidad, dto) values(%s, %s, %s, %s, %s, %s, %s, %s)"
                     params = [id_factura, id_art, articulo, costo, precio, iva, cantidad, dto]
+                    cur.execute(query, params)
+                    connection.commit()
+                    cur.close()    
+                    
+                    ##### Descuento el stock
+                    cur = connection.cursor()
+                    query = "update articulos set stock = stock - %s where id_art= %s and id_empresa = %s"
+                    params = [cantidad, id_art, id_empresa]
                     cur.execute(query, params)
                     connection.commit()
                     cur.close()    
@@ -2193,8 +2202,22 @@ def gen_remito(id):
     return render_template('remito.html', data=data)
 
 
+@app.route('/buscar_art_ajax', methods = ['GET', 'POST'] )
+def buscar_art_ajax():
+    barras = '%'+request.form['barras']+'%'
+    params = [barras]
+    conn = conexion()
+    cur = conn.cursor()
+    query = 'select barras from articulos where barras like  %s'
+    data = cur.execute(query,params)
+    print('barras:', barras)
+    print('Datos:', data)   
+    if data:
+        jok = {"type": "ok"}
+    else:
+        jok = {"type": "no"}
 
-
+    return jsonify(jok) 
 
 if __name__ == "__main__":
    

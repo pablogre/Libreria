@@ -7,7 +7,7 @@
                     
                     <div class="col-sm-3 col-md-6">
                         <div class="form-group">
-                            <input class="form-control" type="text" id="buscar" placeholder="Buscar" onkeyup="search(this.value)">
+                            <input class="form-control" type="text" id="buscar" name="buscar" placeholder="Buscar" onkeyup="search(this.value)">
                         </div>  
                     </div>
                     
@@ -80,7 +80,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Cód. de Barras:</label>
-                                    <input type="text" class="form-control" id="barras" name="barras" >
+                                    <input type="text" class="form-control" id="barras" name="barras" onblur="validar()" >
                                 </div>
                                 <div class="form-group">
                                     <label>Artículo:</label>
@@ -240,9 +240,9 @@
                         <select id="e_id_rubro" class="form-control" name="e_id_rubro"> 
                             {% for rub in rubros %}
                                 {% if rub.0 == articulos.0.4 %}
-                                    <option value="{{rub.0}}" selected> {{rub.0}} - {{rub.1}}</option>
+                                    <option value="{{rub.0}}" selected> {{rub.1}}</option>
                                 {% else %}    
-                                    <option value="{{rub.0}}"> {{rub.0}} - {{rub.1}}</option>
+                                    <option value="{{rub.0}}"> {{rub.1}}</option>
                                 {% endif %}    
                             {% endfor %} 
                         </select>
@@ -253,9 +253,9 @@
                         <select id="e_id_marca" class="form-control" name="e_id_marca"> 
                             {% for marca in marcas %}
                                 {% if marca.0 == articulos.0.5 %}
-                                    <option value="{{marca.0}}" selected>{{marca.0}} - {{marca.1}} </option>
+                                    <option value="{{marca.0}}" selected> {{marca.1}} </option>
                                 {% else %}    
-                                    <option value="{{marca.0}}"> {{marca.0}} - {{marca.1}} </option>
+                                    <option value="{{marca.0}}"> {{marca.1}} </option>
                                 {% endif %}    
                             {% endfor %} 
                         </select>
@@ -266,9 +266,9 @@
                         <select id="e_id_prov" class="form-control" name="e_id_prov"> 
                             {% for prov in proveedores %}
                                 {% if prov.0 == articulos.0.6 %}
-                                    <option value="{{prov.0}}" selected>{{prov.0}} - {{prov.1}}</option>
+                                    <option value="{{prov.0}}" selected> {{prov.1}}</option>
                                 {% else %}    
-                                    <option value="{{prov.0}}"> {{prov.0}} - {{prov.1}}</option>
+                                    <option value="{{prov.0}}"> {{prov.1}}</option>
                                 {% endif %}    
                             {% endfor %} 
                         </select>
@@ -360,8 +360,13 @@
         if(e.which==17 || e.which==74 || e.keyCode == 13){
             e.preventDefault();
         }
-    }
-    )
+    })
+
+    $("#buscar").keydown(function(e){
+        if(e.which==17 || e.which==74 || e.keyCode == 13){
+            e.preventDefault();
+        }
+    })
 });
 
 function search(v) {
@@ -372,6 +377,28 @@ function search(v) {
         });
     }
 
+function validar(){
+    let datos = { 
+        'barras': $("#barras").val()
+        }
+    $.ajax({
+        url: "../buscar_art_ajax",
+        type: "POST",
+        data: datos,
+       
+        success: function(data) {
+            console.log(data)
+            if (data.type == 'ok') {
+                swal("YA EXISTE ESE CÓDIGO","","warning");
+            }else{
+                return
+            }
+        },
+        error: function() {
+            alert('ERROR,  CAGASTE FUEGO')
+        }
+    });
+}
 
 function precio1_a(x){
     if(x.value > 0){
@@ -477,7 +504,7 @@ $('.guardar_alta').on('click', function() {
     let datos = {
         id_art: $('#id_art').val(),
         codigo: $('#codigo').val(),
-    
+        barras: $('#barras').val(),
         articulo: $('#articulo').val(),
         id_rubro: $('#id_rubro').val(),
         id_marca: $('#id_marca').val(),
@@ -588,7 +615,9 @@ $('.guardar').on('click', function() {
         success: function(data) {
             console.log('Data: '+data)
             if (data.type == 'ok') {
-                location.reload()
+                alert('putoooooooooooooo')
+                location.href = "/articulos";
+                return
             }
         },
         error: function() {
@@ -614,6 +643,7 @@ function editar(id_art) {
                 let articulos = data.articulos[0];
                            
                 /// cambio la fecha de dd/mm/yyyy   a   yyyy/mm/dd
+                
                 let date = articulos[15]
                 let fe_ult =  date.split("/").reverse().join("-");
                 console.log(typeof(fe_ult))

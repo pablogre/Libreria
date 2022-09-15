@@ -3,7 +3,7 @@
     <div class="row">
         <div class="col md-12">
             <div class="jumbotron p-3">
-                <input type="text" placeholder="Buscar" onkeyup="search(this.value)" size="6"> <button type="button" class="btn btn-primary btn-sm">Buscar</button> <a href="/view_art_tmp" type="button" class="btn btn-info btn-sm">Detalle</a> <button type="button"
+                <input type="text" id="buscar" placeholder="Buscar" onkeyup="search(this.value)" size="6"> <button type="button" class="btn btn-primary btn-sm">Buscar</button> <a href="/view_art_tmp" type="button" class="btn btn-info btn-sm">Detalle</a> <button type="button"
                     class="btn btn-success float-right btn-sm" data-toggle="modal" data-target="#mymodal">Nuevo</button> {% with messages = get_flashed_messages() %} {% if messages %} {% for message in messages %} {% if 'CANCELADA' in message %}
                 <!-- SI ESTA LA PALABRA EXISTE EN EL MENSAJE MUESTO LA CLASE WARNING SI NO SUCCESS-->
                 <div class="alert alert-danger alert-dismissable" role="alert">
@@ -203,6 +203,17 @@
 {% block script %}
 
 <script type="text/javascript">
+
+    $(document).ready(function(){
+        $("#buacar").keydown(function(e){
+            if(e.which==17 || e.which==74 || e.keyCode == 13){
+                e.preventDefault();
+            }
+        })
+        
+    });
+
+
     function search(v) {
         $.post('/articulos_fa', {
             buscar: v
