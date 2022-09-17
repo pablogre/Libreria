@@ -45,7 +45,7 @@
                         <input type="hidden" id="e_id_art" name="e_id_art" >
 
                         <label>Código:</label>
-                        <input type="number" class="form-control" id= "e_codigo" name="e_codigo" min="1" >
+                        <input type="number" class="form-control" id= "e_codigo" name="e_codigo" min="1" step="1"  >
                     </div>
                     <div class="form-group">
                         <label>Cód. de Barras:</label>
@@ -122,12 +122,12 @@
 
                     <div class="form-group">
                         <label>Stock:</label>
-                        <input type="number" step="0.1" min="0" class="form-control" id="e_stock"name="e_stock" >
+                        <input type="text"  class="form-control" id="e_stock"name="e_stock" >
                     </div>
 
                     <div class="form-group">
                         <label>Stock Min.:</label>
-                        <input type="number" step="0.1" min="0" class="form-control" id="e_st_min"name="e_st_min" >
+                        <input type="text"  class="form-control" id="e_st_min"name="e_st_min" >
                     </div>
                     
                     <div class="form-group">
@@ -216,6 +216,15 @@ $('.guardar').on('click', function() {
         swal("Ingrese Alícuta de I.V.A.","","warning");
         return
     }
+ 
+    /// cambio la fecha de dd/mm/yyyy   a   yyyy/mm/dd
+    let date = $('#e_fe_ult').val()
+    let fe_ult =  date.split("/").reverse().join("-");
+    $('#e_fe_ult').val(fe_ult)
+    console.log("Fecha:" + fe_ult )
+    console.log("Fecha2:" + $('#e_fe_ult').val() )
+    /////////////////////////////////////////////////////
+
     let datos = {
         id_art: $('#e_id_art').val(),
         codigo: $('#e_codigo').val(),
@@ -231,27 +240,27 @@ $('.guardar').on('click', function() {
         precio2: $('#e_precio2').val(),
         stock: $('#e_stock').val(),
         st_min: $('#e_st_min').val(),
-        iva: $('#e_iva').val()
+        iva: $('#e_iva').val(),
+        fe_ult: $('#e_fe_ult').val()
 
     }
-    console.log(datos)
+    console.log("DATOS:"+datos)
     $.ajax({
         url: "../mod_arti_ajax/1",
         type: "POST",
         data: datos,
         
         success: function(data) {
-            console.log('Data: '+data)
             if (data.type == 'ok') {
                 location.reload()
+             
             }
         },
         error: function() {
-            alert('ERROR,  VERIFIQUE')
+            swal("Error al Grabar !","","error")
         }
     });
 })
-
 
 function editar(id_art) {
     let datos = { 'id_art': id_art}
@@ -267,6 +276,15 @@ function editar(id_art) {
                 let articulos = data.articulos[0];
                 let rubros = data.rubros;
                 let ali_iva = data.ali_iva;
+                /// cambio la fecha de dd/mm/yyyy   a   yyyy/mm/dd               
+                let date = articulos[15]
+                console.log('art_fecha:' + articulos[15])                
+                let fe_ult =  date.split("/").reverse().join("-");
+                console.log(typeof(fe_ult))
+                $("#e_fe_ult").val(fe_ult)
+                /////////////////////////////////////////////////////
+                console.log('Fecha:'+fe_ult)
+
                 titulo =  'Editando Articulo ' +' Nº: '+ articulos[0]
                 $(".modal-title").text(titulo);
                 $("#e_id_art").val(articulos[0]);
@@ -283,14 +301,15 @@ function editar(id_art) {
                 $("#e_precio2").val(articulos[11]);
                 $("#e_stock").val(articulos[12]);
                 $("#e_st_min").val(articulos[13]);
-                $("#e_iva").val(articulos[14])
+                $("#e_iva").val(articulos[14]);
+                $("#e_fe_ult").attr('value',fe_ult);
        
 
                 $('#modalEdit').modal("show")
             }
         },
         error: function() {
-            alert('ERROR,  VERIFIQUE')
+            alert('ERROR,  EDITAR')
         }
     });
 }

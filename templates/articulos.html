@@ -75,8 +75,8 @@
                         <div class="modal-body">
                           <!--   <form action="{{url_for('insert_art')}}" method="POST" onkeypress="return anular(event)"  onsubmit="return Validar()"> -->
                                 <div class="form-group">
-                                    <label>Código:</label>
-                                    <input type="number" class="form-control" id="codigo" name="codigo" min="1" value="{{ ultimo.0 }}">
+                                    <label>Código: </label> 
+                                    <input type="number" class="form-control" id="codigo" name="codigo" min="1" step="1" value="{{ ultimo.0 }}">
                                 </div>
                                 <div class="form-group">
                                     <label>Cód. de Barras:</label>
@@ -147,12 +147,12 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Stock:</label>
-                                    <input type="number" step="1" min="0" class="form-control" id="stock" name="stock">
+                                    <input type="text" class="form-control" id="stock" name="stock">
                                 </div>
 
                                 <div class="form-group">
                                     <label>Stock Mínimo:</label>
-                                    <input type="number" step="0.01" min="0" class="form-control" id="st_min" name="st_min">
+                                    <input type="text"  class="form-control" id="st_min" name="st_min">
                                 </div>
 
                                 <div class="form-group">
@@ -224,7 +224,7 @@
                         <input type="hidden" id="e_id_art" name="e_id_art" >
 
                         <label>Código:</label>
-                        <input type="number" class="form-control" id= "e_codigo" name="e_codigo" min="1" >
+                        <input type="number" class="form-control" id= "e_codigo" name="e_codigo" min="1" step="1" >
                     </div>
                     <div class="form-group">
                         <label>Cód. de Barras:</label>
@@ -304,12 +304,12 @@
                     </div>
                     <div class="form-group">
                         <label>Stock:</label>
-                        <input type="number" step="0.1" min="0" class="form-control" id="e_stock"name="e_stock" >
+                        <input type="text"  class="form-control" id="e_stock"name="e_stock" >
                     </div>
 
                     <div class="form-group">
                         <label>Stock Min.:</label>
-                        <input type="number" step="0.1" min="0" class="form-control" id="e_st_min"name="e_st_min" >
+                        <input type="text"  class="form-control" id="e_st_min"name="e_st_min" >
                     </div>
                     
                     <div class="form-group">
@@ -395,7 +395,7 @@ function validar(){
             }
         },
         error: function() {
-            alert('ERROR,  CAGASTE FUEGO')
+            alert('ERROR,  AL VALIDAR')
         }
     });
 }
@@ -470,7 +470,7 @@ function borrar2() {
             }
         },
         error: function() {
-            alert('ERROR,  CAGASTE FUEGO')
+            alert('ERROR,  delete_art_ajax')
         }
     });
 }
@@ -581,10 +581,13 @@ $('.guardar').on('click', function() {
         swal("Ingrese Alícuta de I.V.A.","","warning");
         return
     }
-
+ 
     /// cambio la fecha de dd/mm/yyyy   a   yyyy/mm/dd
     let date = $('#e_fe_ult').val()
-    let fe_ult =  date.split("/").reverse().join("/");
+    let fe_ult =  date.split("/").reverse().join("-");
+    $('#e_fe_ult').val(fe_ult)
+    console.log("Fecha:" + fe_ult )
+    console.log("Fecha2:" + $('#e_fe_ult').val() )
     /////////////////////////////////////////////////////
 
     let datos = {
@@ -603,21 +606,19 @@ $('.guardar').on('click', function() {
         stock: $('#e_stock').val(),
         st_min: $('#e_st_min').val(),
         iva: $('#e_iva').val(),
-        fe_ult: fe_ult
+        fe_ult: $('#e_fe_ult').val()
 
     }
-    console.log(datos)
+    console.log("DATOS:"+datos)
     $.ajax({
         url: "../mod_arti_ajax/1",
         type: "POST",
         data: datos,
         
         success: function(data) {
-            console.log('Data: '+data)
             if (data.type == 'ok') {
-                alert('putoooooooooooooo')
-                location.href = "/articulos";
-                return
+                location.reload()
+             
             }
         },
         error: function() {
@@ -636,7 +637,7 @@ function editar(id_art) {
        
         success: function(data) {
             console.log(data)
-            console.log("fecha :"+data.articulos[0][15])
+            console.log("fecha :" + data.articulos[0][15])
 
             if (data.type == 'ok') {
                  
@@ -647,8 +648,9 @@ function editar(id_art) {
                 let date = articulos[15]
                 let fe_ult =  date.split("/").reverse().join("-");
                 console.log(typeof(fe_ult))
+                $("#e_fe_ult").val(fe_ult)
                 /////////////////////////////////////////////////////
-                console.log(fe_ult)
+                console.log('Fecha:'+fe_ult)
                 let rubros = data.rubros;
                 let ali_iva = data.ali_iva;
                 titulo =  'Editando Articulo ' +' Nº: '+ articulos[0]
@@ -668,7 +670,7 @@ function editar(id_art) {
                 $("#e_stock").val(articulos[12]);
                 $("#e_st_min").val(articulos[13]);
                 $("#e_iva").val(articulos[14]);
-                $("#e_fe_ult").attr('value',fe_ult)
+                $("#e_fe_ult").attr('value',fe_ult);
                 $('#modalEdit').modal("show")
             }
         },

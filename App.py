@@ -507,7 +507,7 @@ def articulos():
 
     ### proximo codigo de art ultimo + 1
     cur = connection.cursor()
-    query = "select max(codigo)+1 as codigo from articulos where id_empresa = %s"
+    query = "select convert( max(codigo)+1, char) as codigo from articulos where id_empresa = %s"
     params = [id_empresa]
     cur.execute(query, params)
     ult = cur.fetchone()
@@ -627,6 +627,7 @@ def mod_arti_ajax(parametro):
         print("id_rubro",id_rubro)
         print("id_marca",id_marca)
         print("id_prov",id_prov)
+        print("fecha:", fe_ult)
         if parametro == "1" :
             try:
                 cur.execute("""
