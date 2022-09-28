@@ -3,7 +3,7 @@
     <div class="row">
         <div class="col md-12">
             <div class="jumbotron p-3">
-                <input type="text" placeholder="Buscar" onkeyup="search(this.value)" size="8"> <button type="button" class="btn btn-primary">Buscar</button><button type="button" class="btn btn-success float-right" data-toggle="modal" data-target="#mymodal">Nuevo</button>                </h2>
+                <input autofocus type="text" placeholder="Buscar" onkeyup="search(this.value)" size="8"> <button type="button" class="btn btn-primary">Buscar</button><button type="button" class="btn btn-success float-right" data-toggle="modal" data-target="#mymodal">Nuevo</button>                </h2>
 
                 {% with messages = get_flashed_messages() %} {% if messages %} {% for message in messages %} {% if 'CANCELA' in message or 'PERTENECE' in message %}
                 <!-- SI ESTA LA PALABRA EXISTE EN EL MENSAJE MUESTO LA CLASE WARNING SI NO SUCCESS-->

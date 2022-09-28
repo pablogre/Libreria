@@ -530,10 +530,12 @@ def articulos():
     alicuotas = ['0.00', '10.50', '21.00', '27.00']
     connection.close()
 
+    fecha = date.today()
+
     if request.method == 'POST':
-        return render_template("search_art.html", articulos = data, rubros = rub, ali_iva = alicuotas, ultimo = ult, marcas = marcas, proveedores = proveedores)
+        return render_template("search_art.html", articulos = data, rubros = rub, ali_iva = alicuotas, ultimo = ult, marcas = marcas, proveedores = proveedores, fecha = fecha)
     else:   
-        return render_template("articulos.html", articulos = data, rubros = rub, ali_iva = alicuotas, ultimo = ult, marcas = marcas, proveedores = proveedores)
+        return render_template("articulos.html", articulos = data, rubros = rub, ali_iva = alicuotas, ultimo = ult, marcas = marcas, proveedores = proveedores, fecha = fecha)
  
 
 @app.route('/edit_arti_ajax', methods = ['GET','POST'])
