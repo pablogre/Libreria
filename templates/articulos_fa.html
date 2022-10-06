@@ -3,7 +3,7 @@
     <div class="row">
         <div class="col md-12">
             <div class="jumbotron p-3">
-                <input type="text"  id="buscar" name="buscar" placeholder="Buscar" onkeyup="search(this.value)" size="6"> <button type="button" class="btn btn-primary btn-sm">Buscar</button> <a href="/view_art_tmp" type="button" class="btn btn-info btn-sm">Detalle</a> <button type="button"
+                <input autofocus type="text"  id="buscar" name="buscar" placeholder="Buscar" onkeyup="search(this.value)" size="6"> <button type="button" class="btn btn-primary btn-sm">Buscar</button> <a href="/view_art_tmp" type="button" class="btn btn-info btn-sm">Detalle</a> <button type="button"
                     class="btn btn-success float-right btn-sm" data-toggle="modal" data-target="#mymodal">Nuevo</button> {% with messages = get_flashed_messages() %} {% if messages %} {% for message in messages %} {% if 'CANCELADA' in message %}
                 <!-- SI ESTA LA PALABRA EXISTE EN EL MENSAJE MUESTO LA CLASE WARNING SI NO SUCCESS-->
                 <div class="alert alert-danger alert-dismissable" role="alert">
@@ -22,6 +22,7 @@
                 <table class="table table-hover table-active table-sm">
                     <tr>
                         <th>Artículo</th>
+                        <th>Fecha Mod.</th>
                         <th>Precio</th>
                     </tr>
 
@@ -33,6 +34,7 @@
                            
                             <!-- <td> <a href="#" data-toggle="modal" data-target="#modaledit{{row.0}}"></a> {{row.2}} </a> </td> -->
                             <td> <button  type="button" class="btn btn-default btn-xs" style="color:dodgerblue;" onclick="editar( {{row.0}} ) ">{{row.3}}</button> </td>
+                            <td>{{row.15}}</td>
                             <td>{{row.9}}</td>
 
                         </tr>

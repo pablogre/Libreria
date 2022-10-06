@@ -8,6 +8,7 @@ from pdfExample import gen_pdf_int,gen_pdf_fisc,gen_pdf_reci
 import time
 import datetime
 import os
+import qrcode
 import pymysql.cursors 
 import json
 
@@ -835,7 +836,9 @@ def articulos_fa():
     #params=[id_empresa, filtro]
     query = 'SELECT * FROM articulos where id_empresa = %s and articulo like %s or codigo like %s or barras like %s  order by articulo limit 100'
 
-    query = 'SELECT id_art, codigo, barras, articulo, id_rubro, id_marca, id_prov, convert(costo, char) as costo, convert(margen1, char) as margen1, convert(precio1, char) as precio1,  convert(margen2, char) as margen2, convert(precio2,char) as precio2, convert(stock, char) as stock, convert(st_min, char) as st_min, convert(iva,char) as iva, id_empresa  FROM articulos where id_empresa = %s and articulo like %s or codigo like %s or barras like %s  order by articulo limit 100' 
+    query = '''
+                SELECT id_art, codigo, barras, articulo, id_rubro, id_marca, id_prov, convert(costo, char) as costo, convert(margen1, char) as margen1, convert(precio1, char) as precio1,  convert(margen2, char) as margen2, convert(precio2,char) as precio2, convert(stock, char) as stock, convert(st_min, char) as st_min, convert(iva,char) as iva, DATE_FORMAT(fe_ult, '%%d/%%m/%%Y') as fe_ult, id_empresa  FROM articulos where id_empresa = %s and articulo like %s or codigo like %s or barras like %s  order by articulo limit 100
+            ''' 
 
     params=[id_empresa, filtro, filtro, filtro]
     cur.execute(query, params)
@@ -2221,6 +2224,50 @@ def buscar_art_ajax():
         jok = {"type": "no"}
 
     return jsonify(jok) 
+
+
+
+
+@app.route('/gen_qr', methods = ['GET', 'POST'] )
+def gen_qr():
+    if request.method == 'POST':
+        id_art = request.form['id_art']
+        codigo = request.form['codigo']
+       
+        print('id_art: ', id_art)
+        url = 'sqldata.dyndns.info:5002/ver_qr/'+id_art
+        qr = qrcode.QRCode(version = 1, box_size=5,border=1)
+        qr.add_data(url)
+        qr.make(fit=True)
+
+        img=qr.make_image(fill='black', back_color='white')
+        img_name =  ".\static\qr" +"\\" + codigo + ".png"
+        img.save(img_name)
+      
+        jok = {"type": "ok", "img_name": img_name}
+
+    return jsonify(jok) 
+
+
+@app.route('/ver_qr/<id_art>', methods = ['GET', 'POST'] )
+def ver_qr(id_art):
+    conn = conexion()
+    cur = conn.cursor()
+    query = '''
+            select barras, articulo, precio1, stock from articulos where id_art = %s and id_empresa = %s
+            '''
+    id_art = id_art
+    id_empresa = 1 # session.get('id_empresa')
+    params = [id_art,id_empresa]
+    cur.execute(query,params)
+    data = cur.fetchall()
+    cur.close
+    conn.close()
+    print(data)
+    
+    return render_template('ver_qr.html', data = data)
+    
+
 
 if __name__ == "__main__":
    

@@ -35,6 +35,7 @@
                 <table class="table table-hover table-active table-sm">
                     <tr>
                         <th>Artículo</th>
+                        <th>Fecha Mod.</th>
                         <th>Precio</th>
                         <th>Acción</th>
                     </tr>
@@ -45,6 +46,7 @@
 
                         <tr>
                             <td> <button style="color:rgb(0, 140, 255)" type="button" class="btn btn-default btn-xs" onclick="editar( {{row.0}} )">{{row.3}}</button>  </td>
+                            <td>{{row.15}}</td>
                             <td>{{row.9}}</td>
                             <td>
                                 <!--  <a href="/update_art/{{row.0}}" class="btn btn-default btn-xs" data-toggle="modal" data-target="#modaledit{{row.0}}"> <img src="/static/images/edit.png" alt="Editar" width="24" height="24"> </a>  -->
@@ -224,6 +226,7 @@
                         <input type="hidden" id="e_id_art" name="e_id_art" >
 
                         <label>Código:</label>
+                        <button type="button" class="btn btn-secondary float-right" data-dismiss="modal" onclick="qr()">Gen. QR</button>
                         <input type="number" class="form-control" id= "e_codigo" name="e_codigo" min="1" step="1" >
                     </div>
                     <div class="form-group">
@@ -376,6 +379,31 @@ function search(v) {
             $('#search_art').html(data);
         });
     }
+
+function qr(){
+    let datos = {
+        'id_art': $("#e_id_art").val(),
+        'codigo': $("#e_codigo").val()
+    }
+    $.ajax({
+        url: "../gen_qr",
+        type: "POST",
+        data: datos,
+       
+        success: function(data) {
+            console.log(data)
+            if (data.type == 'ok') {
+                swal("QR GENERADO CORRECTAMENTE","","success");
+                location.href = data.img_name
+            }else{
+                return
+            }
+        },
+        error: function() {
+            alert('ERROR,  AL GENERAR QR')
+        }
+    });
+}
 
 function validar(){
     let datos = { 
