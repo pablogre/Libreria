@@ -1,0 +1,43 @@
+{% extends "layout.html" %}  {% block title %} Consultar Precio {% endblock %} 
+{% block script %}
+
+<script type="text/javascript">
+   
+    function printHTML() { 
+        if (window.print) { 
+        window.print();
+        }
+    }
+    document.addEventListener("DOMContentLoaded", function(event) {
+        printHTML(); 
+    });
+</script>
+
+{% endblock %} 
+
+
+{% block body %}
+<div class="container">
+    
+        
+        <div class="row">
+            <div class="col md-12">
+                
+                    <input style="font-size: 15px ; font-family:Arial, Helvetica, sans-serif "class="form-control" type="text" value="C.B.: {{data.0.0}}" id="codigo" disabled>
+             
+            
+                    <input style="font-size: 15px ; font-family:Arial, Helvetica, sans-serif " class="form-control" type="text" value="{{data.0.1}}" id="articulo" disabled>
+               
+                
+                    <input style="font-size: 45px ; font-family:Arial, Helvetica, sans-serif " class="form-control" type="text" value="$ {{data.0.3}}" id="precio" disabled>
+                
+                
+                    <input style="font-size: 15px ; font-family:Arial, Helvetica, sans-serif " class="form-control" type="text" value="{{data.0.4}}" id="fe_ult" disabled>
+              
+                    <input style="font-size: 15px ; font-family:Arial, Helvetica, sans-serif " class="form-control" type="text" value="{{data.0.2}}" id="proveedor" disabled>
+                
+            </div>    
+        </div>
+
+</div>    
+{% endblock %}

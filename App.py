@@ -521,7 +521,7 @@ def articulos():
     cur = connection.cursor()
 
     query = '''
-                 SELECT id_art, codigo, barras, articulo, id_rubro, id_marca, id_prov, convert(costo, char) as costo, convert(margen1, char) as margen1, convert(precio1, char) as precio1,  convert(margen2, char) as margen2, convert(precio2,char) as precio2, convert(stock, char) as stock, convert(st_min, char) as st_min, convert(iva,char) as iva, DATE_FORMAT(fe_ult, '%%d/%%m/%%Y') as fe_ult, id_empresa  FROM articulos where id_empresa = %s and articulo like %s or codigo like %s or barras like %s  order by articulo limit 100
+                 SELECT id_art, codigo, barras, articulo, id_rubro, id_marca, id_prov, convert(costo, char) as costo, convert(margen1, char) as margen1, convert(precio1, char) as precio1,  convert(margen2, char) as margen2, convert(precio2,char) as precio2, convert(stock, char) as stock, convert(st_min, char) as st_min, convert(iva,char) as iva, DATE_FORMAT(fe_ult, '%%d/%%m/%%Y %%H:%%i') as fe_ult, id_empresa  FROM articulos where id_empresa = %s and articulo like %s or codigo like %s or barras like %s  order by articulo limit 100
             '''
 
     params=[id_empresa, filtro, filtro, filtro]
@@ -584,7 +584,7 @@ def  _ajax():
     cur = connection.cursor()
     query = '''
              SELECT id_art, codigo, barras, articulo, id_rubro, id_marca, id_prov, convert(costo, char) as costo, convert(margen1, char) as margen1, convert(precio1, char) as precio1,  convert(margen2, char) as margen2, convert(precio2,char) as precio2, convert(stock, char) as stock, convert(st_min, char) as st_min, convert(iva,char) as iva, 
-             DATE_FORMAT(fe_ult, '%%d/%%m/%%Y') as fe_ult, id_empresa  FROM articulos where id_empresa = %s and id_art = %s
+             DATE_FORMAT(fe_ult, '%%d/%%m/%%Y %%H:%%i') as fe_ult, id_empresa  FROM articulos where id_empresa = %s and id_art = %s
              '''
     params=[id_empresa, id_art] 
     cur.execute(query, params)
@@ -782,7 +782,7 @@ def update_art():
 #     return redirect(url_for('articulos'))
 
 @app.route('/delete_art_ajax', methods = ['GET', 'POST'])
-def delete_art():
+def delete_art_ajax():
     if not session.get('id_empresa'):
         return render_template('login.html')
     id = request.form['id_art']
@@ -2267,6 +2267,73 @@ def ver_qr(id_art):
     
     return render_template('ver_qr.html', data = data)
     
+
+
+@app.route('/etiqueta', methods = ['GET', 'POST'] )
+def etiquetas():
+        id_art = request.form['id_art']
+        codigo = request.form['codigo']
+        barras =  request.form['barras']
+        fe_ult = request.form['fe_ult']
+        articulo = request.form['articulo']
+        precio = request.form['precio']
+        proveedor = request.form['proveedor']
+        jok = {"type": "ok",
+              "id_art":id_art,
+              "url": "/ipm_etiqueta"
+              }
+
+        return jsonify(jok) 
+
+
+
+@app.route('/imp_etiqueta/<id_art>', methods = ['GET', 'POST'] )
+def imp_etiqueta(id_art):
+    conn = conexion()
+    cur = conn.cursor()
+    query = '''
+            select barras, articulo, proveedores.proveedor, precio1, DATE_FORMAT(fe_ult, '%%d/%%m/%%Y') as fe_ult, stock from articulos
+            left join proveedores on proveedores.id_prov = articulos.id_prov           
+            where id_art = %s and articulos.id_empresa = %s
+            '''
+    id_art = id_art
+    id_empresa = 1 # session.get('id_empresa')
+    params = [id_art,id_empresa]
+    cur.execute(query,params)
+    data = cur.fetchall()
+    cur.close
+    conn.close()
+    print(data)
+
+    return render_template("etiqueta.html", data = data)
+
+
+
+@app.route('/lis_eti', methods = ['GET','POST'])
+def lis_eti():
+    connection=conexion()
+    cur = connection.cursor()
+    id_empresa = session['id_empresa']
+    hasta = datetime.datetime.utcnow()
+    desde = hasta - datetime.timedelta(days=60)
+    if request.method == 'POST':
+        desde = datetime.datetime.strptime(request.form['desde'], '%Y-%m-%dT%H:%M')
+        hasta =datetime.datetime.strptime(request.form['hasta'], '%Y-%m-%dT%H:%M')
+   
+    # etiquetas
+    query = '''
+            select barras, articulo, proveedores.proveedor, precio1, DATE_FORMAT(fe_ult, '%%d/%%m/%%Y %%H:%%M') as fe_ult, stock, id_art from articulos
+            left join proveedores on proveedores.id_prov = articulos.id_prov           
+            where articulos.fe_ult between %s and %s and articulos.id_empresa = %s
+            '''
+    params = [desde, hasta, id_empresa]
+    cur.execute(query, params)
+    data = cur.fetchall()
+    connection.close()
+
+    return render_template('lis_eti.html', data = data, desde=desde.strftime("%Y-%m-%d %H:%M"), hasta=hasta.strftime("%Y-%m-%d %H:%M"))
+
+
 
 
 if __name__ == "__main__":

@@ -145,7 +145,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Fecha Ult. Compra.:</label>
-                                    <input type="date" class="form-control" id="fe_ult" name="fe_ult"  value="{{fecha}}">
+                                    <input type="datetime-local" class="form-control" id="fe_ult" name="fe_ult"  value="{{fecha}}">
                                 </div>
                                 <div class="form-group">
                                     <label>Stock:</label>
@@ -162,7 +162,7 @@
                                     <select name="iva" id="iva" required="1" class="form-control">
                                             
                                             {% for ali in ali_iva %} 
-                                                {% if ali == 21 %}
+                                                {% if ali == '21.00' %}
                                                     <option value="{{ali}}" selected=selected> {{ali}}</option>
                                                 {% else %}    
                                                     <option value="{{ali}}"> {{ali}}</option>
@@ -222,11 +222,15 @@
 
             <div class="modal-body">
                 <!-- <form name="editcli" action="{{url_for('update_art')}}" method="POST"> -->
-                    <div class="form-group">
+                    
+                    <div class="row" style="justify-content: space-between; margin: 0 0 10px 0;">
                         <input type="hidden" id="e_id_art" name="e_id_art" >
-
-                        <label>Código:</label>
+                        <button type="button" class="btn btn-secondary float-left" data-dismiss="modal" onclick="etiqueta()">Etiqueta</button>
                         <button type="button" class="btn btn-secondary float-right" data-dismiss="modal" onclick="qr()">Gen. QR</button>
+                    </div>
+        
+                    <div class="form-group">
+                        <label>Código:</label>
                         <input type="number" class="form-control" id= "e_codigo" name="e_codigo" min="1" step="1" >
                     </div>
                     <div class="form-group">
@@ -303,7 +307,7 @@
                     </div>
                     <div class="form-group">
                         <label>Fecha Ult. Compra.:</label>
-                        <input type="date" class="form-control" id="e_fe_ult" name="e_fe_ult" >
+                        <input type="datetime-local" class="form-control" id="e_fe_ult" name="e_fe_ult" >
                     </div>
                     <div class="form-group">
                         <label>Stock:</label>
@@ -335,7 +339,7 @@
                         <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Salir</button>
                     </div>
                 <!-- </form> -->
-
+                
             </div>
             <!-- <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Salir</button>
@@ -395,6 +399,38 @@ function qr(){
             if (data.type == 'ok') {
                 swal("QR GENERADO CORRECTAMENTE","","success");
                 location.href = data.img_name
+            }else{
+                return
+            }
+        },
+        error: function() {
+            alert('ERROR,  AL GENERAR QR')
+        }
+    });
+}
+
+function etiqueta(){
+    let datos = {
+        'id_art': $("#e_id_art").val(),
+        'codigo': $("#e_codigo").val(),
+        'barras': $("#e_barras").val(),
+        'fe_ult': $("#e_fe_ult").val(),
+        'articulo': $("#e_articulos").val(),
+        'precio': $("#e_precio1").val(),
+        'proveedor': $("#e_id_prov").val()
+    }
+    
+    $.ajax({
+        url: "../etiqueta",
+        type: "POST",
+        data: datos,
+       
+        success: function(data) {
+            console.log(data)
+            if (data.type == 'ok') {
+                swal("ETIQUETA GENERADA CORRECTAMENTE","","success");
+                //location.href = `${data.url}/`
+                location.href = "imp_etiqueta/"+data.id_art
             }else{
                 return
             }
@@ -674,11 +710,17 @@ function editar(id_art) {
                 /// cambio la fecha de dd/mm/yyyy   a   yyyy/mm/dd
                 
                 let date = articulos[15]
-                let fe_ult =  date.split("/").reverse().join("-");
+                //let fe_ult =  date.split("/").reverse().join("-");
+                let fe_ult = '2022-10-28T19:01'
                 console.log(typeof(fe_ult))
-                $("#e_fe_ult").val(fe_ult)
+                console.log('date:'+date)
+                console.log('fe_ult:'+fe_ult)
+                console.log("VAOJSBNFVISAHVAV");
+               
+               
+                $("#e_fe_ult").val('2022-10-28T19:01')
                 /////////////////////////////////////////////////////
-                console.log('Fecha:'+fe_ult)
+                console.log('Fecha1:'+fe_ult)
                 let rubros = data.rubros;
                 let ali_iva = data.ali_iva;
                 titulo =  'Editando Articulo ' +' Nº: '+ articulos[0]

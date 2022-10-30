@@ -280,7 +280,12 @@ function editar(id_art) {
                 /// cambio la fecha de dd/mm/yyyy   a   yyyy/mm/dd               
                 let date = articulos[15]
                 console.log('art_fecha:' + articulos[15])                
-                let fe_ult =  date.split("/").reverse().join("-");
+               
+                let nuevoArr = date.split(" ");
+                let fecha = nuevoArr[0].split("/").reverse().join("-")
+                let fechaCompleta = fecha+"T"+nuevoArr[1]
+                console.log("fechaCompleta: " + fechaCompleta)
+                let fe_ult = fechaCompleta
                 console.log(typeof(fe_ult))
                 $("#e_fe_ult").val(fe_ult)
                 /////////////////////////////////////////////////////
