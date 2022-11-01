@@ -1724,8 +1724,14 @@ def update_precio():
         condi1 = ""
         condi2 = ""
         condi3 = ""
+        
+        from datetime import datetime
+        fecha = datetime.now()
+        fe_ult = fecha.strftime('%Y/%m/%d %H:%M')
+
         param = []
         param.append(porcentaje)
+        param.append(fe_ult)
         print("porcentaje:", porcentaje)
         print("id_rubro:", id_rubro)
         print("id_marca:", id_marca)
@@ -1753,7 +1759,38 @@ def update_precio():
         print('param:',param) 
     
         
-        query = "update articulos set costo = costo * (1 + %s /100) where " + condi1 + condi2 + condi3
+        query = "update articulos set costo = costo * (1 + %s /100), fe_ult = %s where " + condi1 + condi2 + condi3
+       
+        print('query:', query)
+       
+        connection=conexion()
+        cur = connection.cursor() 
+        cur.execute(query,param)
+        connection.commit()
+        cur.close()
+        connection.close() 
+        print('lo ejecuto')
+        
+
+
+
+
+            
+        if id_marca != '0':
+            if len(condi1) > 0:
+                condi2 =  " and id_marca = %s"
+                param.append(id_marca)
+            else:
+                condi2 =  " id_marca = %s"
+                param.append(id_marca)    
+        if id_proveedor != '0':
+            if len(condi2) > 0:
+                condi3 =  " and id_prov = %s"
+                param.append(id_proveedor)    
+            else:
+                condi3 =  " id_prov = %s"
+                param.append(id_proveedor)
+        query = "update articulos set precio1 = costo * (1 + margen1/100), precio2 = costo * (1 + margen2/100)  where " + condi1 + condi2 + condi3
        
         print('query:', query)
         
@@ -1763,8 +1800,8 @@ def update_precio():
         connection.commit()
         cur.close()
         connection.close() 
-        print('lo ejecuto')
-        
+        print('Cambió los precios')
+    
         jok = {"type": "ok", "status":200  }
         return jsonify(jok) 
 
